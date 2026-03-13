@@ -2,9 +2,9 @@
   "name": "@timlavelle/iq-policy-decision-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Policy Decision Service — SVoP lookup, entitlement rules, disruption policy. Hosts sdk-core-policy.",
+  "description": "Policy Decision Service \u2014 SVoP lookup, entitlement rules, disruption policy. Hosts sdk-core-policy.",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
