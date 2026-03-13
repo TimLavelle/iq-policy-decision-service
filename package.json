@@ -1,0 +1,26 @@
+{
+  "name": "@timlavelle/iq-policy-decision-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Policy Decision Service — SVoP lookup, entitlement rules, disruption policy. Hosts sdk-core-policy.",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "pact:publish": "pact-broker publish ./pacts --broker-base-url $PACT_BROKER_BASE_URL"
+  },
+  "dependencies": {
+    "@timlavelle/sdk-core-policy": "latest",
+    "express": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@pact-foundation/pact": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
