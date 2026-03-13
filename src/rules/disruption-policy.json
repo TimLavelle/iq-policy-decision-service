@@ -1,0 +1,195 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": {
+        "x": 40,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-dt",
+      "name": "Disruption Policy",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "col-type",
+            "name": "Disruption Type",
+            "field": "disruptionType",
+            "defaultValue": null
+          },
+          {
+            "id": "col-tier",
+            "name": "Customer Tier",
+            "field": "customerTier",
+            "defaultValue": null
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out-fee",
+            "name": "Rebooking Fee",
+            "field": "rebookingFee",
+            "defaultValue": "0"
+          },
+          {
+            "id": "out-meal",
+            "name": "Meal Voucher",
+            "field": "mealVoucher",
+            "defaultValue": "false"
+          },
+          {
+            "id": "out-lounge",
+            "name": "Lounge Access",
+            "field": "loungeAccess",
+            "defaultValue": "false"
+          },
+          {
+            "id": "out-hotel",
+            "name": "Hotel Eligible",
+            "field": "hotelEligible",
+            "defaultValue": "false"
+          },
+          {
+            "id": "out-ref",
+            "name": "Policy Ref",
+            "field": "policyRef",
+            "defaultValue": "\"POL-DIS-0001\""
+          }
+        ],
+        "rules": [
+          {
+            "_id": "rule-cancellation-platinum-one",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "\"Platinum One\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "true",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0001\""
+          },
+          {
+            "_id": "rule-cancellation-platinum",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "\"Platinum\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "true",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0001\""
+          },
+          {
+            "_id": "rule-cancellation-other",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "false",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0001\""
+          },
+          {
+            "_id": "rule-diversion-platinum-one",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "\"Platinum One\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "true",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0004\""
+          },
+          {
+            "_id": "rule-diversion-platinum",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "\"Platinum\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "true",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0004\""
+          },
+          {
+            "_id": "rule-diversion-other",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "false",
+            "out-hotel": "true",
+            "out-ref": "\"POL-DIS-0004\""
+          },
+          {
+            "_id": "rule-delay4-platinum-one",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "\"Platinum One\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "true",
+            "out-hotel": "false",
+            "out-ref": "\"POL-DIS-0002\""
+          },
+          {
+            "_id": "rule-delay4-other",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "false",
+            "out-hotel": "false",
+            "out-ref": "\"POL-DIS-0002\""
+          },
+          {
+            "_id": "rule-delay2-platinum-one",
+            "col-type": "\"DELAY_2HR\"",
+            "col-tier": "\"Platinum One\"",
+            "out-fee": "0",
+            "out-meal": "true",
+            "out-lounge": "false",
+            "out-hotel": "false",
+            "out-ref": "\"POL-DIS-0003\""
+          },
+          {
+            "_id": "rule-delay2-other",
+            "col-type": "\"DELAY_2HR\"",
+            "col-tier": "",
+            "out-fee": "0",
+            "out-meal": "false",
+            "out-lounge": "false",
+            "out-hotel": "false",
+            "out-ref": "\"POL-DIS-0003\""
+          }
+        ]
+      },
+      "position": {
+        "x": 300,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": {
+        "x": 600,
+        "y": 200
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "sourceId": "node-input",
+      "targetId": "node-dt"
+    },
+    {
+      "id": "edge-2",
+      "sourceId": "node-dt",
+      "targetId": "node-output"
+    }
+  ]
+}

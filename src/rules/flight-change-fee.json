@@ -1,0 +1,134 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": {
+        "x": 40,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-dt",
+      "name": "Flight Change Fee",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "col-tier",
+            "name": "Customer Tier",
+            "field": "customerTier",
+            "defaultValue": null
+          },
+          {
+            "id": "col-days",
+            "name": "Days Before Departure",
+            "field": "daysBeforeDeparture",
+            "defaultValue": null
+          },
+          {
+            "id": "col-fare",
+            "name": "Fare Class",
+            "field": "fareClass",
+            "defaultValue": null
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out-fee",
+            "name": "Change Fee Due",
+            "field": "changeFeeDue",
+            "defaultValue": "250"
+          },
+          {
+            "id": "out-reason",
+            "name": "Waiving Reason",
+            "field": "waivingReason",
+            "defaultValue": null
+          },
+          {
+            "id": "out-ref",
+            "name": "Policy Ref",
+            "field": "policyRef",
+            "defaultValue": "\"POL-FC-0001\""
+          }
+        ],
+        "rules": [
+          {
+            "_id": "rule-platinum-one",
+            "col-tier": "\"Platinum One\"",
+            "col-days": "",
+            "col-fare": "",
+            "out-fee": "0",
+            "out-reason": "\"Platinum One \u2014 fee waived\"",
+            "out-ref": "\"POL-FC-0042\""
+          },
+          {
+            "_id": "rule-within-24h",
+            "col-tier": "",
+            "col-days": "<= 1",
+            "col-fare": "",
+            "out-fee": "0",
+            "out-reason": "\"Within 24 hours \u2014 fee waived\"",
+            "out-ref": "\"POL-FC-0044\""
+          },
+          {
+            "_id": "rule-platinum-biz-7d",
+            "col-tier": "\"Platinum\"",
+            "col-days": "<= 7",
+            "col-fare": "\"Business\"",
+            "out-fee": "0",
+            "out-reason": "\"Platinum Business within 7 days\"",
+            "out-ref": "\"POL-FC-0043\""
+          },
+          {
+            "_id": "rule-platinum-biz-over7",
+            "col-tier": "\"Platinum\"",
+            "col-days": "> 7",
+            "col-fare": "\"Business\"",
+            "out-fee": "150",
+            "out-reason": "",
+            "out-ref": "\"POL-FC-0001\""
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-days": "",
+            "col-fare": "",
+            "out-fee": "250",
+            "out-reason": "",
+            "out-ref": "\"POL-FC-0001\""
+          }
+        ]
+      },
+      "position": {
+        "x": 300,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": {
+        "x": 600,
+        "y": 200
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "sourceId": "node-input",
+      "targetId": "node-dt"
+    },
+    {
+      "id": "edge-2",
+      "sourceId": "node-dt",
+      "targetId": "node-output"
+    }
+  ]
+}

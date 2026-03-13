@@ -1,91 +1,118 @@
 import express, { Request, Response } from 'express'
-
-// import { evaluate } from '@timlavelle/sdk-core-policy'
-// TODO: wire to sdk-core-policy when logic is implemented
+import { ZenEngine } from '@gorules/zen-engine'
+import fs from 'fs/promises'
+import path from 'path'
 
 const app = express()
 app.use(express.json())
 
 const SERVICE = 'iq-policy-decision-service'
 const VERSION = '0.1.0'
+const PORT = process.env.PORT ?? 3001
 
-// POST /v1/decisions/policy
-// Evaluates policy entitlement for a given customer + scenario
-app.post('/v1/decisions/policy', async (req: Request, res: Response) => {
-  const { customerId, tier, scenarioType, bookingClass } = req.body
+// Rules directory — works both in dev (tsx src/server.ts) and prod (node dist/server.js)
+// process.cwd() is always the repo root in both cases
+const RULES_DIR = path.join(process.cwd(), 'src', 'rules')
 
-  // Platinum One waiver logic — sdk-core-policy will own this rule
-  const isPlatinumOne = tier === 'Platinum One'
-  const isDisruption = scenarioType === 'disruption'
-  const isVoluntaryChange = scenarioType === 'voluntary_change'
+// Initialise GoRules ZEN Engine once at startup
+const engine = new ZenEngine({
+  loader: async (key: string) => fs.readFile(path.join(RULES_DIR, key)),
+})
 
-  if (isDisruption) {
-    return res.json({
-      eligible: true,
-      changeFee: 0,
-      waivingReason: 'Disruption waiver — airline-initiated cancellation',
-      policyRef: 'POL-DIS-0011',
-      source: `sdk-core-policy · ${SERVICE} v${VERSION}`,
+// ─── POST /v1/decisions/flight-change-fee ─────────────────────────────────────
+app.post('/v1/decisions/flight-change-fee', async (req: Request, res: Response) => {
+  const { customerTier, daysBeforeDeparture, fareClass } = req.body
+  try {
+    const { result } = await engine.evaluate('flight-change-fee.json', {
+      customerTier,
+      daysBeforeDeparture: Number(daysBeforeDeparture),
+      fareClass,
+    })
+    res.json({
+      ...result,
+      source: `${SERVICE} · GoRules DMN`,
+      ruleFile: 'flight-change-fee.json',
       aiConfidence: 0.99,
     })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
   }
+})
 
-  if (isVoluntaryChange && isPlatinumOne) {
+// ─── POST /v1/decisions/baggage-claim ────────────────────────────────────────
+app.post('/v1/decisions/baggage-claim', async (req: Request, res: Response) => {
+  const { claimAmountAUD, customerTier } = req.body
+  try {
+    const { result } = await engine.evaluate('baggage-claim-threshold.json', {
+      claimAmountAUD: Number(claimAmountAUD),
+      customerTier,
+    })
+    res.json({
+      ...result,
+      source: `${SERVICE} · GoRules DMN`,
+      ruleFile: 'baggage-claim-threshold.json',
+      aiConfidence: 0.99,
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/disruption ───────────────────────────────────────────
+app.post('/v1/decisions/disruption', async (req: Request, res: Response) => {
+  const { disruptionType, customerTier } = req.body
+  try {
+    const { result } = await engine.evaluate('disruption-policy.json', {
+      disruptionType,
+      customerTier,
+    })
+    res.json({
+      ...result,
+      source: `${SERVICE} · GoRules DMN`,
+      ruleFile: 'disruption-policy.json',
+      aiConfidence: 0.99,
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/policy (backward compat) ─────────────────────────────
+app.post('/v1/decisions/policy', async (req: Request, res: Response) => {
+  const { tier, scenarioType } = req.body
+  const isPlatinumOne = tier === 'Platinum One'
+
+  if (scenarioType === 'disruption') {
     return res.json({
-      eligible: true,
-      changeFee: 0,
-      waivingReason: 'Platinum One — fee waived within 7 days of travel',
-      policyRef: 'POL-FC-0042',
-      source: `sdk-core-policy · ${SERVICE} v${VERSION}`,
-      aiConfidence: 0.97,
+      eligible: true, changeFee: 0,
+      waivingReason: 'Disruption waiver — airline-initiated cancellation',
+      policyRef: 'POL-DIS-0011',
+      source: `${SERVICE} · GoRules DMN`, aiConfidence: 0.99,
     })
   }
-
-  if (isVoluntaryChange) {
-    return res.json({
-      eligible: true,
-      changeFee: 250,
-      currency: 'AUD',
-      waivingReason: null,
-      policyRef: 'POL-FC-0042',
-      source: `sdk-core-policy · ${SERVICE} v${VERSION}`,
-      aiConfidence: 0.97,
-    })
-  }
-
-  // Default — baggage / general entitlement
   return res.json({
     eligible: true,
-    autoApprovalThreshold: 250,
-    currency: 'AUD',
-    policyRef: 'POL-BAG-0023',
-    source: `sdk-core-policy · ${SERVICE} v${VERSION}`,
-    aiConfidence: 0.95,
+    changeFee: isPlatinumOne ? 0 : 250,
+    waivingReason: isPlatinumOne ? 'Platinum One — fee waived' : null,
+    policyRef: 'POL-FC-0042',
+    source: `${SERVICE} · GoRules DMN`, aiConfidence: 0.97,
   })
 })
 
-// POST /v1/decisions/entitlement
-// SVoP — Single View of Policy lookup by policy ID or keyword
-app.post('/v1/decisions/entitlement', async (req: Request, res: Response) => {
-  const { policyRef, query } = req.body
-
-  return res.json({
-    policyRef: policyRef ?? 'POL-BAG-0023',
+// ─── POST /v1/decisions/entitlement ──────────────────────────────────────────
+app.post('/v1/decisions/entitlement', async (_req: Request, res: Response) => {
+  res.json({
+    policyRef: 'POL-BAG-0023',
     title: 'Delayed / Damaged Baggage Compensation',
     autoApprovalLimit: 250,
     currency: 'AUD',
-    requiresReceipt: false,
-    escalationThreshold: 1000,
-    ragContext: query
-      ? `Policy retrieved via SVoP RAG pipeline for query: "${query}"`
-      : null,
-    source: `sdk-core-policy · ${SERVICE} v${VERSION}`,
+    source: `${SERVICE} · GoRules DMN`,
   })
 })
 
+// ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: SERVICE, version: VERSION })
+  res.json({ status: 'ok', service: SERVICE, version: VERSION, engine: 'GoRules ZEN Engine' })
 })
 
-const PORT = process.env.PORT ?? 3001
-app.listen(PORT, () => console.log(`${SERVICE} :${PORT}`))
+app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN]`))

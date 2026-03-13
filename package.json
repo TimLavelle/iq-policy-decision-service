@@ -11,6 +11,7 @@
     "pact:publish": "pact-broker publish ./pacts --broker-base-url $PACT_BROKER_BASE_URL"
   },
   "dependencies": {
+    "@gorules/zen-engine": "^0.53.0",
     "@timlavelle/sdk-core-policy": "latest",
     "express": "latest",
     "zod": "latest"

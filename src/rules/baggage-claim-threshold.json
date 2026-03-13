@@ -1,0 +1,179 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": {
+        "x": 40,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-dt",
+      "name": "Baggage Claim Threshold",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "col-tier",
+            "name": "Customer Tier",
+            "field": "customerTier",
+            "defaultValue": null
+          },
+          {
+            "id": "col-amount",
+            "name": "Claim Amount AUD",
+            "field": "claimAmountAUD",
+            "defaultValue": null
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out-approve",
+            "name": "Auto Approve",
+            "field": "autoApprove",
+            "defaultValue": "false"
+          },
+          {
+            "id": "out-limit",
+            "name": "Approval Limit",
+            "field": "approvalLimit",
+            "defaultValue": "150"
+          },
+          {
+            "id": "out-review",
+            "name": "Requires Review",
+            "field": "requiresReview",
+            "defaultValue": "false"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "rule-high-value-review",
+            "col-tier": "",
+            "col-amount": "> 1000",
+            "out-approve": "false",
+            "out-limit": "0",
+            "out-review": "true"
+          },
+          {
+            "_id": "rule-platinum-one-auto",
+            "col-tier": "\"Platinum One\"",
+            "col-amount": "<= 500",
+            "out-approve": "true",
+            "out-limit": "500",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-platinum-one-over",
+            "col-tier": "\"Platinum One\"",
+            "col-amount": "> 500",
+            "out-approve": "false",
+            "out-limit": "500",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-platinum-auto",
+            "col-tier": "\"Platinum\"",
+            "col-amount": "<= 250",
+            "out-approve": "true",
+            "out-limit": "250",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-platinum-over",
+            "col-tier": "\"Platinum\"",
+            "col-amount": "> 250",
+            "out-approve": "false",
+            "out-limit": "250",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-gold-auto",
+            "col-tier": "\"Gold\"",
+            "col-amount": "<= 250",
+            "out-approve": "true",
+            "out-limit": "250",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-gold-over",
+            "col-tier": "\"Gold\"",
+            "col-amount": "> 250",
+            "out-approve": "false",
+            "out-limit": "250",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-silver-auto",
+            "col-tier": "\"Silver\"",
+            "col-amount": "<= 150",
+            "out-approve": "true",
+            "out-limit": "150",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-silver-over",
+            "col-tier": "\"Silver\"",
+            "col-amount": "> 150",
+            "out-approve": "false",
+            "out-limit": "150",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-bronze-auto",
+            "col-tier": "\"Bronze\"",
+            "col-amount": "<= 150",
+            "out-approve": "true",
+            "out-limit": "150",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-bronze-over",
+            "col-tier": "\"Bronze\"",
+            "col-amount": "> 150",
+            "out-approve": "false",
+            "out-limit": "150",
+            "out-review": "false"
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-amount": "<= 150",
+            "out-approve": "true",
+            "out-limit": "150",
+            "out-review": "false"
+          }
+        ]
+      },
+      "position": {
+        "x": 300,
+        "y": 200
+      }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": {
+        "x": 600,
+        "y": 200
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "sourceId": "node-input",
+      "targetId": "node-dt"
+    },
+    {
+      "id": "edge-2",
+      "sourceId": "node-dt",
+      "targetId": "node-output"
+    }
+  ]
+}
