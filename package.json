@@ -26,5 +26,9 @@
     "tsx": "latest",
     "typescript": "latest",
     "vitest": "latest"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }
