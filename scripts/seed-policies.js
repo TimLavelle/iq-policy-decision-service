@@ -36,7 +36,7 @@ if (!BUCKET) {
   process.exit(1)
 }
 
-const s3 = new S3Client({ region: REGION })
+const s3 = new S3Client({ region: REGION, followRegionRedirects: true })
 const bedrockAgent = new BedrockAgentClient({ region: REGION })
 
 // ─── Policy document factory helpers ─────────────────────────────────────────
@@ -987,6 +987,20 @@ if (ALL_POLICIES.length !== 180) {
 // Upload to S3
 // ─────────────────────────────────────────────────────────────────────────────
 
+// S3 metadata headers only allow ASCII. Strip/replace non-ASCII characters.
+function toAsciiMeta(obj) {
+  const result = {}
+  for (const [k, v] of Object.entries(obj)) {
+    result[k] = String(v)
+      .replace(/\u2014/g, '-')   // em dash → -
+      .replace(/\u2013/g, '-')   // en dash → -
+      .replace(/[\u2018\u2019]/g, "'") // curly single quotes → '
+      .replace(/[\u201C\u201D]/g, '"') // curly double quotes → "
+      .replace(/[^\x00-\x7F]/g, '')    // strip any remaining non-ASCII
+  }
+  return result
+}
+
 async function uploadAll() {
   let uploaded = 0
   let failed = 0
@@ -1003,7 +1017,7 @@ async function uploadAll() {
         Key: key,
         Body: body,
         ContentType: 'application/json',
-        Metadata: {
+        Metadata: toAsciiMeta({
           policyId: policy.id,
           domain: policy.domain,
           tier: policy.tier,
@@ -1011,7 +1025,7 @@ async function uploadAll() {
           version: policy.version,
           effective_date: policy.effective_date,
           tags: policy.tags.join(','),
-        },
+        }),
       }))
       uploaded++
       console.log(' OK')

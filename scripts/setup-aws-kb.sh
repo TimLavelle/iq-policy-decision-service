@@ -23,7 +23,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REGION="${AWS_REGION:-us-east-1}"
+REGION="${AWS_REGION:-ap-southeast-2}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${REPO_DIR}/.env"
@@ -54,11 +54,13 @@ write_env() {
   fi
 }
 
-# ─── 1. Resolve AWS Account ID ────────────────────────────────────────────────
+# ─── 1. Resolve AWS Account ID + Caller Identity ─────────────────────────────
 
 info "Resolving AWS account ID..."
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+CALLER_ARN="$(aws sts get-caller-identity --query Arn --output text)"
 success "Account: ${ACCOUNT_ID}"
+success "Caller : ${CALLER_ARN}"
 
 BUCKET_NAME="iq-policy-documents-${ACCOUNT_ID}"
 COLLECTION_NAME="iq-svop-collection"
@@ -174,8 +176,7 @@ success "Inline policy attached"
 
 info "Checking OpenSearch Serverless collection: ${COLLECTION_NAME}..."
 COLLECTION_ID="$(aws opensearchserverless list-collections \
-  --filters name="${COLLECTION_NAME}" \
-  --query 'collectionSummaries[0].id' \
+  --query "collectionSummaries[?name=='${COLLECTION_NAME}'].id | [0]" \
   --output text 2>/dev/null || echo 'None')"
 
 if [ "${COLLECTION_ID}" = "None" ] || [ -z "${COLLECTION_ID}" ]; then
@@ -231,27 +232,82 @@ COLLECTION_ENDPOINT="$(aws opensearchserverless batch-get-collection \
 COLLECTION_ARN="arn:aws:aoss:${REGION}:${ACCOUNT_ID}:collection/${COLLECTION_ID}"
 success "Collection endpoint: ${COLLECTION_ENDPOINT}"
 
-# Data access policy — grants the KB role access to create/read/write indexes
-info "Creating/updating AOSS data access policy for KB role..."
-aws opensearchserverless create-access-policy \
-  --name "${COLLECTION_NAME}-access" \
-  --type data \
-  --policy '[{
-    "Rules": [
-      {
-        "ResourceType": "collection",
-        "Resource": ["collection/'"${COLLECTION_NAME}"'"],
-        "Permission": ["aoss:CreateCollectionItems","aoss:DeleteCollectionItems","aoss:UpdateCollectionItems","aoss:DescribeCollectionItems"]
-      },
-      {
-        "ResourceType": "index",
-        "Resource": ["index/'"${COLLECTION_NAME}"'/*"],
-        "Permission": ["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex","aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument"]
-      }
-    ],
-    "Principal": ["'"${ROLE_ARN}"'"]
-  }]' 2>/dev/null || warn "Data access policy may already exist — continuing"
-success "Data access policy configured"
+info "Waiting for collection to be fully initialized..."
+sleep 60
+
+# ─── Data access policy MUST exist before index creation ──────────────────────
+# Grants access to:
+#   - ${ROLE_ARN}   : Bedrock KB role (reads/writes index during ingestion + retrieval)
+#   - ${CALLER_ARN} : Your IAM identity (runs create-index.py below)
+
+DATA_ACCESS_POLICY='[{
+  "Rules": [
+    {
+      "ResourceType": "collection",
+      "Resource": ["collection/'"${COLLECTION_NAME}"'"],
+      "Permission": [
+        "aoss:CreateCollectionItems",
+        "aoss:DeleteCollectionItems",
+        "aoss:UpdateCollectionItems",
+        "aoss:DescribeCollectionItems"
+      ]
+    },
+    {
+      "ResourceType": "index",
+      "Resource": ["index/'"${COLLECTION_NAME}"'/*"],
+      "Permission": [
+        "aoss:CreateIndex",
+        "aoss:DeleteIndex",
+        "aoss:UpdateIndex",
+        "aoss:DescribeIndex",
+        "aoss:ReadDocument",
+        "aoss:WriteDocument"
+      ]
+    }
+  ],
+  "Principal": ["'"${ROLE_ARN}"'", "'"${CALLER_ARN}"'"]
+}]'
+
+info "Creating/updating AOSS data access policy..."
+if EXISTING_VERSION="$(aws opensearchserverless get-access-policy \
+    --name "${COLLECTION_NAME}-access" \
+    --type data \
+    --query 'accessPolicyDetail.policyVersion' \
+    --output text 2>/dev/null)"; then
+  info "Policy exists (version ${EXISTING_VERSION}) — updating..."
+  UPDATE_OUT="$(aws opensearchserverless update-access-policy \
+    --name "${COLLECTION_NAME}-access" \
+    --type data \
+    --policy-version "${EXISTING_VERSION}" \
+    --policy "${DATA_ACCESS_POLICY}" 2>&1)" || {
+    if echo "${UPDATE_OUT}" | grep -q "No changes detected"; then
+      warn "Policy unchanged — already up to date"
+    else
+      echo "${UPDATE_OUT}" >&2
+      exit 1
+    fi
+  }
+  success "Data access policy updated"
+else
+  aws opensearchserverless create-access-policy \
+    --name "${COLLECTION_NAME}-access" \
+    --type data \
+    --policy "${DATA_ACCESS_POLICY}"
+  success "Data access policy created"
+fi
+
+# Give IAM time to propagate before hitting the AOSS endpoint
+info "Waiting 15s for access policy to propagate..."
+sleep 15
+
+info "Creating OpenSearch index for Knowledge Base..."
+python3 "${SCRIPT_DIR}/create-index.py" "${COLLECTION_ENDPOINT}" "iq-policy-index" "${REGION}"
+success "OpenSearch index ready"
+
+# AOSS index propagation — Bedrock validates against the endpoint during KB creation.
+# Without this wait, CreateKnowledgeBase returns "no such index" even though the index exists.
+info "Waiting 30s for index to propagate before creating Knowledge Base..."
+sleep 30
 
 # ─── 5. Bedrock Knowledge Base ────────────────────────────────────────────────
 
