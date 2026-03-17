@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import { ZenEngine } from '@gorules/zen-engine'
 import fs from 'fs/promises'
 import path from 'path'
+import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base'
 
 const app = express()
 app.use(express.json())
@@ -110,9 +111,62 @@ app.post('/v1/decisions/entitlement', async (_req: Request, res: Response) => {
   })
 })
 
+// ─── POST /policy/query ───────────────────────────────────────────────────────
+// RAG query against the Bedrock Knowledge Base (SVoP). Gracefully falls back to
+// realistic mock responses when BEDROCK_KB_ID env var is not set.
+app.post('/policy/query', async (req: Request, res: Response) => {
+  const { question, context } = req.body as { question: string; context?: { tier?: string; domain?: string; sessionId?: string } }
+  if (!question || typeof question !== 'string') {
+    res.status(400).json({ error: 'question is required' })
+    return
+  }
+  try {
+    const result = await queryKnowledgeBase(question, context ?? {})
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Knowledge base query failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /policy/explain ─────────────────────────────────────────────────────
+// Explains how a specific policy ID applies to a given scenario.
+app.post('/policy/explain', async (req: Request, res: Response) => {
+  const { policyId, scenario } = req.body as { policyId: string; scenario: object }
+  if (!policyId || typeof policyId !== 'string') {
+    res.status(400).json({ error: 'policyId is required' })
+    return
+  }
+  try {
+    const result = await explainPolicy(policyId, scenario ?? {})
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Policy explanation failed', message: (err as Error).message })
+  }
+})
+
+// ─── GET /policy/search ───────────────────────────────────────────────────────
+// Full-text search across the policy catalogue. Returns matching PolicyDocuments.
+app.get('/policy/search', async (req: Request, res: Response) => {
+  const q = (req.query['q'] as string | undefined) ?? ''
+  const domain = req.query['domain'] as string | undefined
+  const tier = req.query['tier'] as string | undefined
+  try {
+    const result = await searchPolicies(q, domain, tier)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: 'Policy search failed', message: (err as Error).message })
+  }
+})
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: SERVICE, version: VERSION, engine: 'GoRules ZEN Engine' })
+  res.json({
+    status: 'ok',
+    service: SERVICE,
+    version: VERSION,
+    engine: 'GoRules ZEN Engine',
+    knowledgeBase: process.env.BEDROCK_KB_ID ? 'bedrock-kb' : 'mock',
+  })
 })
 
 app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN]`))
