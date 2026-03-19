@@ -363,28 +363,34 @@ export async function queryKnowledgeBase(question: string, context: QueryContext
     ...(context.sessionId ? { sessionId: context.sessionId } : {}),
   }
 
-  const cmd = new RetrieveAndGenerateCommand(input)
-  const response = await client.send(cmd)
+  try {
+    const cmd = new RetrieveAndGenerateCommand(input)
+    const response = await client.send(cmd)
 
-  const answer = response.output?.text ?? ''
-  const citations = response.citations ?? []
+    const answer = response.output?.text ?? ''
+    const citations = response.citations ?? []
 
-  const sources: PolicySource[] = citations.flatMap(c =>
-    (c.retrievedReferences ?? []).map(ref => ({
-      policyId: (ref.metadata?.['policyId'] as string | undefined) ?? 'UNKNOWN',
-      title: (ref.metadata?.['title'] as string | undefined) ?? 'Policy Document',
-      domain: (ref.metadata?.['domain'] as string | undefined) ?? 'general',
-      relevanceScore: 0.9,
-      excerpt: ref.content?.text?.slice(0, 200) ?? '',
-    })),
-  )
+    const sources: PolicySource[] = citations.flatMap(c =>
+      (c.retrievedReferences ?? []).map(ref => ({
+        policyId: (ref.metadata?.['policyId'] as string | undefined) ?? 'UNKNOWN',
+        title: (ref.metadata?.['title'] as string | undefined) ?? 'Policy Document',
+        domain: (ref.metadata?.['domain'] as string | undefined) ?? 'general',
+        relevanceScore: 0.9,
+        excerpt: ref.content?.text?.slice(0, 200) ?? '',
+      })),
+    )
 
-  return {
-    answer,
-    sources,
-    confidence: sources.length > 0 ? 0.92 : 0.6,
-    executionMs: Date.now() - start,
-    source: 'bedrock-kb',
+    return {
+      answer,
+      sources,
+      confidence: sources.length > 0 ? 0.92 : 0.6,
+      executionMs: Date.now() - start,
+      source: 'bedrock-kb',
+    }
+  } catch (err) {
+    // Bedrock KB unavailable (credentials, quota, etc.) — fall back to mock data
+    console.warn('[knowledge-base] Bedrock KB unavailable, using mock data:', (err as Error).message)
+    return buildMockQueryResult(question, context)
   }
 }
 
