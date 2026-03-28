@@ -19,6 +19,7 @@
     "@aws-sdk/client-s3": "^3.1010.0",
     "@gorules/zen-engine": "^0.53.0",
     "@upstash/redis": "^1.37.0",
+    "nanoid": "^5.0.0",
     "@timlavelle/sdk-core-policy": "latest",
     "dotenv": "^17.3.1",
     "express": "latest",

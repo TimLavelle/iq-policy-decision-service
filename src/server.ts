@@ -1,40 +1,75 @@
 import express, { Request, Response } from 'express'
 import { ZenEngine } from '@gorules/zen-engine'
-import fs from 'fs/promises'
-import path from 'path'
-import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base'
+import { nanoid } from 'nanoid'
+import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base.js'
+import { getRedis } from './redis.js'
+import {
+  loadRule, saveRule, seedRulesIntoRedis,
+  listRules, getRuleMeta,
+} from './rule-store.js'
+import {
+  logDecision, getDecisionLog, detectAnomalies,
+  type DecisionLogEntry,
+} from './decision-logger.js'
 
 const app = express()
 app.use(express.json())
 
 const SERVICE = 'iq-policy-decision-service'
-const VERSION = '0.1.0'
+const VERSION = '0.2.0'
 const PORT = process.env.PORT ?? 3001
 
-// Rules directory — works both in dev (tsx src/server.ts) and prod (node dist/server.js)
-// process.cwd() is always the repo root in both cases
-const RULES_DIR = path.join(process.cwd(), 'src', 'rules')
+// ─── ZEN Engine — Redis-backed, hot-reloadable ────────────────────────────────
+// Engine is a module-level singleton. After any rule save, refreshEngine() is
+// called to rebuild with the updated loader. Recreation is fast (~10ms).
 
-// Initialise GoRules ZEN Engine once at startup
-const engine = new ZenEngine({
-  loader: async (key: string) => fs.readFile(path.join(RULES_DIR, key)),
-})
+let engine = new ZenEngine({ loader: async (key: string) => loadRule(key) })
+
+function refreshEngine() {
+  try { engine.dispose() } catch { /* ignore if already disposed */ }
+  engine = new ZenEngine({ loader: async (key: string) => loadRule(key) })
+}
+
+// ─── Startup ──────────────────────────────────────────────────────────────────
+
+async function startup() {
+  await seedRulesIntoRedis()
+  const redis = getRedis()
+  const rulesStore = redis ? 'redis' : 'filesystem'
+  console.log(`[${SERVICE}] rules store: ${rulesStore}`)
+}
+
+// ─── Decision helpers ─────────────────────────────────────────────────────────
+
+async function evaluate(
+  ruleFile: string,
+  inputs: Record<string, unknown>
+): Promise<Record<string, unknown>> {
+  const start = Date.now()
+  const { result } = await engine.evaluate(ruleFile, inputs)
+  const durationMs = Date.now() - start
+  const entry: DecisionLogEntry = {
+    id: nanoid(10),
+    timestamp: new Date().toISOString(),
+    ruleFile,
+    inputs,
+    outputs: result as Record<string, unknown>,
+    durationMs,
+  }
+  void logDecision(entry)
+  return result as Record<string, unknown>
+}
 
 // ─── POST /v1/decisions/flight-change-fee ─────────────────────────────────────
 app.post('/v1/decisions/flight-change-fee', async (req: Request, res: Response) => {
   const { customerTier, daysBeforeDeparture, fareClass } = req.body
   try {
-    const { result } = await engine.evaluate('flight-change-fee.json', {
+    const result = await evaluate('flight-change-fee.json', {
       customerTier,
       daysBeforeDeparture: Number(daysBeforeDeparture),
       fareClass,
     })
-    res.json({
-      ...result,
-      source: `${SERVICE} · GoRules DMN`,
-      ruleFile: 'flight-change-fee.json',
-      aiConfidence: 0.99,
-    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'flight-change-fee.json', aiConfidence: 0.99 })
   } catch (err) {
     res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
   }
@@ -44,16 +79,11 @@ app.post('/v1/decisions/flight-change-fee', async (req: Request, res: Response) 
 app.post('/v1/decisions/baggage-claim', async (req: Request, res: Response) => {
   const { claimAmountAUD, customerTier } = req.body
   try {
-    const { result } = await engine.evaluate('baggage-claim-threshold.json', {
+    const result = await evaluate('baggage-claim-threshold.json', {
       claimAmountAUD: Number(claimAmountAUD),
       customerTier,
     })
-    res.json({
-      ...result,
-      source: `${SERVICE} · GoRules DMN`,
-      ruleFile: 'baggage-claim-threshold.json',
-      aiConfidence: 0.99,
-    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'baggage-claim-threshold.json', aiConfidence: 0.99 })
   } catch (err) {
     res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
   }
@@ -63,16 +93,8 @@ app.post('/v1/decisions/baggage-claim', async (req: Request, res: Response) => {
 app.post('/v1/decisions/disruption', async (req: Request, res: Response) => {
   const { disruptionType, customerTier } = req.body
   try {
-    const { result } = await engine.evaluate('disruption-policy.json', {
-      disruptionType,
-      customerTier,
-    })
-    res.json({
-      ...result,
-      source: `${SERVICE} · GoRules DMN`,
-      ruleFile: 'disruption-policy.json',
-      aiConfidence: 0.99,
-    })
+    const result = await evaluate('disruption-policy.json', { disruptionType, customerTier })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-policy.json', aiConfidence: 0.99 })
   } catch (err) {
     res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
   }
@@ -82,7 +104,6 @@ app.post('/v1/decisions/disruption', async (req: Request, res: Response) => {
 app.post('/v1/decisions/policy', async (req: Request, res: Response) => {
   const { tier, scenarioType } = req.body
   const isPlatinumOne = tier === 'Platinum One'
-
   if (scenarioType === 'disruption') {
     return res.json({
       eligible: true, changeFee: 0,
@@ -111,9 +132,90 @@ app.post('/v1/decisions/entitlement', async (_req: Request, res: Response) => {
   })
 })
 
-// ─── POST /policy/query ───────────────────────────────────────────────────────
-// RAG query against the Bedrock Knowledge Base (SVoP). Gracefully falls back to
-// realistic mock responses when BEDROCK_KB_ID env var is not set.
+// ─── Rules CRUD ───────────────────────────────────────────────────────────────
+
+// GET /v1/rules — list all rules with metadata
+app.get('/v1/rules', (_req: Request, res: Response) => {
+  res.json({ rules: getRuleMeta() })
+})
+
+// GET /v1/rules/:name — return full JDM JSON
+app.get('/v1/rules/:name', async (req: Request, res: Response) => {
+  const { name } = req.params
+  if (!listRules().includes(name as never)) {
+    res.status(404).json({ error: 'Rule not found', name })
+    return
+  }
+  try {
+    const buf = await loadRule(name)
+    const content = JSON.parse(buf.toString('utf-8')) as Record<string, unknown>
+    res.json({ name, content })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load rule', message: (err as Error).message })
+  }
+})
+
+// PUT /v1/rules/:name — save updated JDM JSON + hot-reload engine
+app.put('/v1/rules/:name', async (req: Request, res: Response) => {
+  const { name } = req.params
+  if (!listRules().includes(name as never)) {
+    res.status(404).json({ error: 'Rule not found', name })
+    return
+  }
+  const { content } = req.body as { content: Record<string, unknown> }
+  if (!content || content['contentType'] !== 'application/vnd.gorules.decision') {
+    res.status(400).json({ error: 'Invalid JDM content — contentType must be application/vnd.gorules.decision' })
+    return
+  }
+  try {
+    await saveRule(name, JSON.stringify(content, null, 2))
+    refreshEngine()
+    res.json({ ok: true, name })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save rule', message: (err as Error).message })
+  }
+})
+
+// POST /v1/rules/:name/simulate — evaluate WITHOUT logging to decision log
+app.post('/v1/rules/:name/simulate', async (req: Request, res: Response) => {
+  const { name } = req.params
+  if (!listRules().includes(name as never)) {
+    res.status(404).json({ error: 'Rule not found', name })
+    return
+  }
+  const { inputs } = req.body as { inputs: Record<string, unknown> }
+  if (!inputs || typeof inputs !== 'object') {
+    res.status(400).json({ error: 'inputs object is required' })
+    return
+  }
+  const start = Date.now()
+  try {
+    const { result } = await engine.evaluate(name, inputs)
+    res.json({ result, durationMs: Date.now() - start })
+  } catch (err) {
+    res.status(500).json({ error: 'Simulation failed', message: (err as Error).message })
+  }
+})
+
+// ─── Decision log + anomalies ─────────────────────────────────────────────────
+
+// GET /v1/decisions/log
+app.get('/v1/decisions/log', async (req: Request, res: Response) => {
+  const limit = Math.min(Number(req.query['limit'] ?? 100), 500)
+  const ruleFile = req.query['ruleFile'] as string | undefined
+  const entries = await getDecisionLog(limit, ruleFile)
+  res.json({ entries, total: entries.length })
+})
+
+// GET /v1/decisions/anomalies
+app.get('/v1/decisions/anomalies', async (req: Request, res: Response) => {
+  const ruleFile = req.query['ruleFile'] as string | undefined
+  const { anomalies, analysedCount } = await detectAnomalies(ruleFile)
+  res.json({ anomalies, analysedCount })
+})
+
+// ─── Policy KB endpoints ──────────────────────────────────────────────────────
+
 app.post('/policy/query', async (req: Request, res: Response) => {
   const { question, context } = req.body as { question: string; context?: { tier?: string; domain?: string; sessionId?: string } }
   if (!question || typeof question !== 'string') {
@@ -128,8 +230,6 @@ app.post('/policy/query', async (req: Request, res: Response) => {
   }
 })
 
-// ─── POST /policy/explain ─────────────────────────────────────────────────────
-// Explains how a specific policy ID applies to a given scenario.
 app.post('/policy/explain', async (req: Request, res: Response) => {
   const { policyId, scenario } = req.body as { policyId: string; scenario: object }
   if (!policyId || typeof policyId !== 'string') {
@@ -144,8 +244,6 @@ app.post('/policy/explain', async (req: Request, res: Response) => {
   }
 })
 
-// ─── GET /policy/search ───────────────────────────────────────────────────────
-// Full-text search across the policy catalogue. Returns matching PolicyDocuments.
 app.get('/policy/search', async (req: Request, res: Response) => {
   const q = (req.query['q'] as string | undefined) ?? ''
   const domain = req.query['domain'] as string | undefined
@@ -159,14 +257,33 @@ app.get('/policy/search', async (req: Request, res: Response) => {
 })
 
 // ─── Health ───────────────────────────────────────────────────────────────────
-app.get('/health', (_req: Request, res: Response) => {
+app.get('/health', async (_req: Request, res: Response) => {
+  const redis = getRedis()
+  let rulesStore: 'redis' | 'filesystem' = 'filesystem'
+  let decisionsLogged = 0
+  if (redis) {
+    try {
+      await redis.ping()
+      rulesStore = 'redis'
+      decisionsLogged = await redis.llen('decisions:log')
+    } catch { /* Redis unreachable */ }
+  }
   res.json({
     status: 'ok',
     service: SERVICE,
     version: VERSION,
     engine: 'GoRules ZEN Engine',
+    rulesStore,
+    decisionsLogged,
     knowledgeBase: process.env.BEDROCK_KB_ID ? 'bedrock-kb' : 'mock',
   })
 })
 
-app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN]`))
+// ─── Start ────────────────────────────────────────────────────────────────────
+startup()
+  .then(() => app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN v${VERSION}]`)))
+  .catch(err => {
+    console.error('[startup] failed:', err)
+    // Still start the server — filesystem fallback is functional
+    app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN — Redis unavailable, filesystem fallback]`))
+  })
