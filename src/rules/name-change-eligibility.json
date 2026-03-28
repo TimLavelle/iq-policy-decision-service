@@ -1,0 +1,176 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Name Change Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-type", "name": "Change Type", "field": "changeType", "defaultValue": null },
+          { "id": "col-days", "name": "Days Before Departure", "field": "daysBeforeDeparture", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-permitted", "name": "Permitted", "field": "permitted", "defaultValue": "false" },
+          { "id": "out-fee", "name": "Fee AUD", "field": "fee", "defaultValue": "100" },
+          { "id": "out-docs", "name": "Requires Documentation", "field": "requiresDocumentation", "defaultValue": "false" },
+          { "id": "out-hours", "name": "Processing Hours", "field": "processingHours", "defaultValue": "48" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-NC-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-any-within-2h",
+            "col-type": "",
+            "col-days": "< 0.09",
+            "col-tier": "",
+            "out-permitted": "false",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "0",
+            "out-ref": "\"POL-NC-0002\""
+          },
+          {
+            "_id": "rule-minor-po",
+            "col-type": "\"minor_correction\"",
+            "col-days": "",
+            "col-tier": "\"Platinum One\"",
+            "out-permitted": "true",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "2",
+            "out-ref": "\"POL-NC-0010\""
+          },
+          {
+            "_id": "rule-minor-any",
+            "col-type": "\"minor_correction\"",
+            "col-days": "",
+            "col-tier": "",
+            "out-permitted": "true",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "4",
+            "out-ref": "\"POL-NC-0011\""
+          },
+          {
+            "_id": "rule-legal-po",
+            "col-type": "\"legal_name_change\"",
+            "col-days": "> 2",
+            "col-tier": "\"Platinum One\"",
+            "out-permitted": "true",
+            "out-fee": "0",
+            "out-docs": "true",
+            "out-hours": "4",
+            "out-ref": "\"POL-NC-0012\""
+          },
+          {
+            "_id": "rule-legal-platinum",
+            "col-type": "\"legal_name_change\"",
+            "col-days": "> 2",
+            "col-tier": "\"Platinum\"",
+            "out-permitted": "true",
+            "out-fee": "50",
+            "out-docs": "true",
+            "out-hours": "8",
+            "out-ref": "\"POL-NC-0013\""
+          },
+          {
+            "_id": "rule-legal-gold",
+            "col-type": "\"legal_name_change\"",
+            "col-days": "> 2",
+            "col-tier": "\"Gold\"",
+            "out-permitted": "true",
+            "out-fee": "75",
+            "out-docs": "true",
+            "out-hours": "24",
+            "out-ref": "\"POL-NC-0014\""
+          },
+          {
+            "_id": "rule-legal-default",
+            "col-type": "\"legal_name_change\"",
+            "col-days": "> 2",
+            "col-tier": "",
+            "out-permitted": "true",
+            "out-fee": "100",
+            "out-docs": "true",
+            "out-hours": "48",
+            "out-ref": "\"POL-NC-0015\""
+          },
+          {
+            "_id": "rule-legal-within-2d",
+            "col-type": "\"legal_name_change\"",
+            "col-days": "<= 2",
+            "col-tier": "",
+            "out-permitted": "false",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "0",
+            "out-ref": "\"POL-NC-0003\""
+          },
+          {
+            "_id": "rule-transfer-po",
+            "col-type": "\"full_transfer\"",
+            "col-days": "> 7",
+            "col-tier": "\"Platinum One\"",
+            "out-permitted": "true",
+            "out-fee": "150",
+            "out-docs": "true",
+            "out-hours": "24",
+            "out-ref": "\"POL-NC-0016\""
+          },
+          {
+            "_id": "rule-transfer-platinum-7d",
+            "col-type": "\"full_transfer\"",
+            "col-days": "> 7",
+            "col-tier": "\"Platinum\"",
+            "out-permitted": "true",
+            "out-fee": "200",
+            "out-docs": "true",
+            "out-hours": "48",
+            "out-ref": "\"POL-NC-0017\""
+          },
+          {
+            "_id": "rule-transfer-blocked",
+            "col-type": "\"full_transfer\"",
+            "col-days": "<= 7",
+            "col-tier": "",
+            "out-permitted": "false",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "0",
+            "out-ref": "\"POL-NC-0004\""
+          },
+          {
+            "_id": "rule-transfer-default",
+            "col-type": "\"full_transfer\"",
+            "col-days": "",
+            "col-tier": "",
+            "out-permitted": "false",
+            "out-fee": "0",
+            "out-docs": "false",
+            "out-hours": "0",
+            "out-ref": "\"POL-NC-0005\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

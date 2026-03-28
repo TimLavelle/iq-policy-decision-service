@@ -1,0 +1,154 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Fraud Risk Threshold",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-amount", "name": "Transaction Amount AUD", "field": "transactionAmountAUD", "defaultValue": null },
+          { "id": "col-risk", "name": "Risk Score", "field": "riskScore", "defaultValue": null },
+          { "id": "col-age", "name": "Account Age Days", "field": "accountAgeDays", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-action", "name": "Action", "field": "action", "defaultValue": "\"review\"" },
+          { "id": "out-mfa", "name": "Requires MFA", "field": "requiresMFA", "defaultValue": "true" },
+          { "id": "out-max-auto", "name": "Max Auto Approval AUD", "field": "maxAutoApprovalAUD", "defaultValue": "500" },
+          { "id": "out-notify", "name": "Notify Fraud Team", "field": "notifyFraudTeam", "defaultValue": "false" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-FR-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-high-risk-always-decline",
+            "col-amount": "",
+            "col-risk": "> 85",
+            "col-age": "",
+            "out-action": "\"decline\"",
+            "out-mfa": "true",
+            "out-max-auto": "0",
+            "out-notify": "true",
+            "out-ref": "\"POL-FR-0010\""
+          },
+          {
+            "_id": "rule-high-risk-large-amount",
+            "col-amount": "> 5000",
+            "col-risk": "> 50",
+            "col-age": "",
+            "out-action": "\"decline\"",
+            "out-mfa": "true",
+            "out-max-auto": "0",
+            "out-notify": "true",
+            "out-ref": "\"POL-FR-0011\""
+          },
+          {
+            "_id": "rule-new-account-large",
+            "col-amount": "> 2000",
+            "col-risk": "",
+            "col-age": "< 30",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "500",
+            "out-notify": "true",
+            "out-ref": "\"POL-FR-0012\""
+          },
+          {
+            "_id": "rule-new-account-medium",
+            "col-amount": "> 500",
+            "col-risk": "",
+            "col-age": "< 30",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "500",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0013\""
+          },
+          {
+            "_id": "rule-very-large-any",
+            "col-amount": "> 10000",
+            "col-risk": "",
+            "col-age": "",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "0",
+            "out-notify": "true",
+            "out-ref": "\"POL-FR-0014\""
+          },
+          {
+            "_id": "rule-large-medium-risk",
+            "col-amount": "> 3000",
+            "col-risk": "> 40",
+            "col-age": "",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "1000",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0015\""
+          },
+          {
+            "_id": "rule-medium-risk",
+            "col-amount": "",
+            "col-risk": "> 60",
+            "col-age": "",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "500",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0016\""
+          },
+          {
+            "_id": "rule-large-low-risk",
+            "col-amount": "> 5000",
+            "col-risk": "<= 30",
+            "col-age": "> 180",
+            "out-action": "\"approve\"",
+            "out-mfa": "true",
+            "out-max-auto": "10000",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0017\""
+          },
+          {
+            "_id": "rule-normal-established",
+            "col-amount": "<= 1000",
+            "col-risk": "<= 30",
+            "col-age": "> 90",
+            "out-action": "\"approve\"",
+            "out-mfa": "false",
+            "out-max-auto": "1000",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0018\""
+          },
+          {
+            "_id": "rule-default",
+            "col-amount": "",
+            "col-risk": "",
+            "col-age": "",
+            "out-action": "\"review\"",
+            "out-mfa": "true",
+            "out-max-auto": "500",
+            "out-notify": "false",
+            "out-ref": "\"POL-FR-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

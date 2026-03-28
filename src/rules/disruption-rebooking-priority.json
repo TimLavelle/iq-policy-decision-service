@@ -1,0 +1,187 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Disruption Rebooking Priority",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-disruption", "name": "Disruption Type", "field": "disruptionType", "defaultValue": null },
+          { "id": "col-connecting", "name": "Has Connecting Flight", "field": "hasConnectingFlight", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-priority", "name": "Priority Level", "field": "priorityLevel", "defaultValue": "5" },
+          { "id": "out-fasttrack", "name": "Fast Track Eligible", "field": "fastTrackEligible", "defaultValue": "false" },
+          { "id": "out-dedicated", "name": "Dedicated Agent Queue", "field": "dedicatedAgentQueue", "defaultValue": "false" },
+          { "id": "out-window", "name": "Max Rebooking Window", "field": "maxRebookingWindow", "defaultValue": "\"same-day\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-DR-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-po-cancel",
+            "col-tier": "\"Platinum One\"",
+            "col-disruption": "\"CANCELLATION\"",
+            "col-connecting": "",
+            "out-priority": "1",
+            "out-fasttrack": "true",
+            "out-dedicated": "true",
+            "out-window": "\"72h\"",
+            "out-ref": "\"POL-DR-0010\""
+          },
+          {
+            "_id": "rule-po-delay4",
+            "col-tier": "\"Platinum One\"",
+            "col-disruption": "\"DELAY_4HR\"",
+            "col-connecting": "",
+            "out-priority": "1",
+            "out-fasttrack": "true",
+            "out-dedicated": "true",
+            "out-window": "\"48h\"",
+            "out-ref": "\"POL-DR-0010\""
+          },
+          {
+            "_id": "rule-po-any",
+            "col-tier": "\"Platinum One\"",
+            "col-disruption": "",
+            "col-connecting": "",
+            "out-priority": "1",
+            "out-fasttrack": "true",
+            "out-dedicated": "true",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0010\""
+          },
+          {
+            "_id": "rule-platinum-cancel",
+            "col-tier": "\"Platinum\"",
+            "col-disruption": "\"CANCELLATION\"",
+            "col-connecting": "",
+            "out-priority": "2",
+            "out-fasttrack": "true",
+            "out-dedicated": "true",
+            "out-window": "\"72h\"",
+            "out-ref": "\"POL-DR-0011\""
+          },
+          {
+            "_id": "rule-platinum-connecting",
+            "col-tier": "\"Platinum\"",
+            "col-disruption": "",
+            "col-connecting": "true",
+            "out-priority": "2",
+            "out-fasttrack": "true",
+            "out-dedicated": "false",
+            "out-window": "\"48h\"",
+            "out-ref": "\"POL-DR-0012\""
+          },
+          {
+            "_id": "rule-platinum-any",
+            "col-tier": "\"Platinum\"",
+            "col-disruption": "",
+            "col-connecting": "",
+            "out-priority": "2",
+            "out-fasttrack": "true",
+            "out-dedicated": "false",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0011\""
+          },
+          {
+            "_id": "rule-gold-cancel",
+            "col-tier": "\"Gold\"",
+            "col-disruption": "\"CANCELLATION\"",
+            "col-connecting": "",
+            "out-priority": "2",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"48h\"",
+            "out-ref": "\"POL-DR-0013\""
+          },
+          {
+            "_id": "rule-gold-connecting",
+            "col-tier": "\"Gold\"",
+            "col-disruption": "",
+            "col-connecting": "true",
+            "out-priority": "3",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"48h\"",
+            "out-ref": "\"POL-DR-0014\""
+          },
+          {
+            "_id": "rule-gold-any",
+            "col-tier": "\"Gold\"",
+            "col-disruption": "",
+            "col-connecting": "",
+            "out-priority": "3",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0013\""
+          },
+          {
+            "_id": "rule-any-cancel-connecting",
+            "col-tier": "",
+            "col-disruption": "\"CANCELLATION\"",
+            "col-connecting": "true",
+            "out-priority": "3",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"48h\"",
+            "out-ref": "\"POL-DR-0015\""
+          },
+          {
+            "_id": "rule-any-cancel",
+            "col-tier": "",
+            "col-disruption": "\"CANCELLATION\"",
+            "col-connecting": "",
+            "out-priority": "4",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0016\""
+          },
+          {
+            "_id": "rule-any-delay4",
+            "col-tier": "",
+            "col-disruption": "\"DELAY_4HR\"",
+            "col-connecting": "",
+            "out-priority": "4",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0017\""
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-disruption": "",
+            "col-connecting": "",
+            "out-priority": "5",
+            "out-fasttrack": "false",
+            "out-dedicated": "false",
+            "out-window": "\"same-day\"",
+            "out-ref": "\"POL-DR-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

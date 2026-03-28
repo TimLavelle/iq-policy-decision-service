@@ -1,0 +1,133 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Special Item Fee",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-item", "name": "Item Type", "field": "itemType", "defaultValue": null },
+          { "id": "col-route", "name": "Route Type", "field": "routeType", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-fee", "name": "Fee AUD", "field": "feeAUD", "defaultValue": "75" },
+          { "id": "out-max-dim", "name": "Max Dimension Cm", "field": "maxDimensionCm", "defaultValue": "190" },
+          { "id": "out-advance", "name": "Advance Booking Required", "field": "advanceBookingRequired", "defaultValue": "false" },
+          { "id": "out-max-weight", "name": "Max Weight Kg", "field": "maxWeightKg", "defaultValue": "32" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-SI-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-sports-domestic",
+            "col-item": "\"sports-equipment\"",
+            "col-route": "\"domestic\"",
+            "out-fee": "50",
+            "out-max-dim": "200",
+            "out-advance": "false",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-SI-0010\""
+          },
+          {
+            "_id": "rule-sports-international",
+            "col-item": "\"sports-equipment\"",
+            "col-route": "\"international\"",
+            "out-fee": "120",
+            "out-max-dim": "200",
+            "out-advance": "true",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-SI-0011\""
+          },
+          {
+            "_id": "rule-music-small-domestic",
+            "col-item": "\"musical-instrument\"",
+            "col-route": "\"domestic\"",
+            "out-fee": "0",
+            "out-max-dim": "115",
+            "out-advance": "false",
+            "out-max-weight": "10",
+            "out-ref": "\"POL-SI-0012\""
+          },
+          {
+            "_id": "rule-music-intl",
+            "col-item": "\"musical-instrument\"",
+            "col-route": "\"international\"",
+            "out-fee": "60",
+            "out-max-dim": "150",
+            "out-advance": "true",
+            "out-max-weight": "23",
+            "out-ref": "\"POL-SI-0013\""
+          },
+          {
+            "_id": "rule-oversized-domestic",
+            "col-item": "\"oversized-item\"",
+            "col-route": "\"domestic\"",
+            "out-fee": "75",
+            "out-max-dim": "210",
+            "out-advance": "true",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-SI-0014\""
+          },
+          {
+            "_id": "rule-oversized-intl",
+            "col-item": "\"oversized-item\"",
+            "col-route": "\"international\"",
+            "out-fee": "150",
+            "out-max-dim": "210",
+            "out-advance": "true",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-SI-0015\""
+          },
+          {
+            "_id": "rule-bicycle-domestic",
+            "col-item": "\"bicycle\"",
+            "col-route": "\"domestic\"",
+            "out-fee": "50",
+            "out-max-dim": "220",
+            "out-advance": "true",
+            "out-max-weight": "30",
+            "out-ref": "\"POL-SI-0016\""
+          },
+          {
+            "_id": "rule-bicycle-intl",
+            "col-item": "\"bicycle\"",
+            "col-route": "\"international\"",
+            "out-fee": "120",
+            "out-max-dim": "220",
+            "out-advance": "true",
+            "out-max-weight": "30",
+            "out-ref": "\"POL-SI-0017\""
+          },
+          {
+            "_id": "rule-default",
+            "col-item": "",
+            "col-route": "",
+            "out-fee": "75",
+            "out-max-dim": "190",
+            "out-advance": "true",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-SI-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

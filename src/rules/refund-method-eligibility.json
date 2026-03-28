@@ -1,0 +1,154 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Refund Method Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-payment", "name": "Original Payment Method", "field": "originalPaymentMethod", "defaultValue": null },
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-amount", "name": "Refund Amount AUD", "field": "refundAmountAUD", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-method", "name": "Refund Method", "field": "refundMethod", "defaultValue": "\"travel-bank\"" },
+          { "id": "out-days", "name": "Processing Days", "field": "processingDays", "defaultValue": "7" },
+          { "id": "out-fee", "name": "Fee AUD", "field": "feeAUD", "defaultValue": "0" },
+          { "id": "out-verify", "name": "Requires Verification", "field": "requiresVerification", "defaultValue": "false" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-RM-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-cc-large",
+            "col-payment": "\"credit-card\"",
+            "col-fare": "",
+            "col-amount": "> 5000",
+            "out-method": "\"original-payment\"",
+            "out-days": "10",
+            "out-fee": "0",
+            "out-verify": "true",
+            "out-ref": "\"POL-RM-0010\""
+          },
+          {
+            "_id": "rule-cc-standard",
+            "col-payment": "\"credit-card\"",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"original-payment\"",
+            "out-days": "5",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0011\""
+          },
+          {
+            "_id": "rule-travel-bank",
+            "col-payment": "\"travel-bank\"",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"travel-bank\"",
+            "out-days": "1",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0012\""
+          },
+          {
+            "_id": "rule-cash-large",
+            "col-payment": "\"cash\"",
+            "col-fare": "",
+            "col-amount": "> 1000",
+            "out-method": "\"cheque\"",
+            "out-days": "14",
+            "out-fee": "10",
+            "out-verify": "true",
+            "out-ref": "\"POL-RM-0013\""
+          },
+          {
+            "_id": "rule-cash-standard",
+            "col-payment": "\"cash\"",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"travel-bank\"",
+            "out-days": "3",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0014\""
+          },
+          {
+            "_id": "rule-points-flex",
+            "col-payment": "\"points\"",
+            "col-fare": "in [\"Economy Flex\", \"Business Flex\", \"Premium Economy Flex\", \"First\"]",
+            "col-amount": "",
+            "out-method": "\"points\"",
+            "out-days": "3",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0015\""
+          },
+          {
+            "_id": "rule-points-sale",
+            "col-payment": "\"points\"",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"travel-bank\"",
+            "out-days": "3",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0016\""
+          },
+          {
+            "_id": "rule-gift-card-large",
+            "col-payment": "\"gift-card\"",
+            "col-fare": "",
+            "col-amount": "> 5000",
+            "out-method": "\"travel-bank\"",
+            "out-days": "7",
+            "out-fee": "0",
+            "out-verify": "true",
+            "out-ref": "\"POL-RM-0017\""
+          },
+          {
+            "_id": "rule-gift-card-standard",
+            "col-payment": "\"gift-card\"",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"travel-bank\"",
+            "out-days": "5",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0018\""
+          },
+          {
+            "_id": "rule-default",
+            "col-payment": "",
+            "col-fare": "",
+            "col-amount": "",
+            "out-method": "\"travel-bank\"",
+            "out-days": "7",
+            "out-fee": "0",
+            "out-verify": "false",
+            "out-ref": "\"POL-RM-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

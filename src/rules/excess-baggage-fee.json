@@ -1,0 +1,186 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Excess Baggage Fee",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-route", "name": "Route Type", "field": "routeType", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-per-kg", "name": "Fee Per Kg AUD", "field": "feePerKgAUD", "defaultValue": "20" },
+          { "id": "out-first-bag", "name": "First Excess Bag Fee AUD", "field": "firstExcessBagFeeAUD", "defaultValue": "60" },
+          { "id": "out-max-weight", "name": "Max Weight Kg", "field": "maxWeightKg", "defaultValue": "32" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-EB-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-domestic-po",
+            "col-route": "\"domestic\"",
+            "col-tier": "\"Platinum One\"",
+            "out-per-kg": "0",
+            "out-first-bag": "0",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0010\""
+          },
+          {
+            "_id": "rule-domestic-platinum",
+            "col-route": "\"domestic\"",
+            "col-tier": "\"Platinum\"",
+            "out-per-kg": "0",
+            "out-first-bag": "0",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0011\""
+          },
+          {
+            "_id": "rule-domestic-gold",
+            "col-route": "\"domestic\"",
+            "col-tier": "\"Gold\"",
+            "out-per-kg": "8",
+            "out-first-bag": "25",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0012\""
+          },
+          {
+            "_id": "rule-domestic-default",
+            "col-route": "\"domestic\"",
+            "col-tier": "",
+            "out-per-kg": "10",
+            "out-first-bag": "35",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0013\""
+          },
+          {
+            "_id": "rule-tasman-po",
+            "col-route": "\"trans-tasman\"",
+            "col-tier": "\"Platinum One\"",
+            "out-per-kg": "0",
+            "out-first-bag": "0",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0014\""
+          },
+          {
+            "_id": "rule-tasman-platinum",
+            "col-route": "\"trans-tasman\"",
+            "col-tier": "\"Platinum\"",
+            "out-per-kg": "10",
+            "out-first-bag": "30",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0015\""
+          },
+          {
+            "_id": "rule-tasman-gold",
+            "col-route": "\"trans-tasman\"",
+            "col-tier": "\"Gold\"",
+            "out-per-kg": "15",
+            "out-first-bag": "45",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0016\""
+          },
+          {
+            "_id": "rule-tasman-default",
+            "col-route": "\"trans-tasman\"",
+            "col-tier": "",
+            "out-per-kg": "20",
+            "out-first-bag": "60",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0017\""
+          },
+          {
+            "_id": "rule-intl-short-po",
+            "col-route": "\"international-short\"",
+            "col-tier": "\"Platinum One\"",
+            "out-per-kg": "10",
+            "out-first-bag": "0",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0018\""
+          },
+          {
+            "_id": "rule-intl-short-platinum",
+            "col-route": "\"international-short\"",
+            "col-tier": "\"Platinum\"",
+            "out-per-kg": "15",
+            "out-first-bag": "40",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0019\""
+          },
+          {
+            "_id": "rule-intl-short-gold",
+            "col-route": "\"international-short\"",
+            "col-tier": "\"Gold\"",
+            "out-per-kg": "22",
+            "out-first-bag": "60",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0020\""
+          },
+          {
+            "_id": "rule-intl-short-default",
+            "col-route": "\"international-short\"",
+            "col-tier": "",
+            "out-per-kg": "30",
+            "out-first-bag": "80",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0021\""
+          },
+          {
+            "_id": "rule-intl-long-po",
+            "col-route": "\"international-long\"",
+            "col-tier": "\"Platinum One\"",
+            "out-per-kg": "15",
+            "out-first-bag": "0",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0022\""
+          },
+          {
+            "_id": "rule-intl-long-platinum",
+            "col-route": "\"international-long\"",
+            "col-tier": "\"Platinum\"",
+            "out-per-kg": "22",
+            "out-first-bag": "60",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0023\""
+          },
+          {
+            "_id": "rule-intl-long-gold",
+            "col-route": "\"international-long\"",
+            "col-tier": "\"Gold\"",
+            "out-per-kg": "33",
+            "out-first-bag": "90",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0024\""
+          },
+          {
+            "_id": "rule-intl-long-default",
+            "col-route": "\"international-long\"",
+            "col-tier": "",
+            "out-per-kg": "45",
+            "out-first-bag": "120",
+            "out-max-weight": "32",
+            "out-ref": "\"POL-EB-0025\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Refund Velocity Check",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-count", "name": "Refunds In Last 30 Days", "field": "refundsInLast30Days", "defaultValue": null },
+          { "id": "col-amount", "name": "Total Refund Amount AUD", "field": "totalRefundAmountAUD", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-allowed", "name": "Allowed", "field": "allowed", "defaultValue": "true" },
+          { "id": "out-review", "name": "Requires Manual Review", "field": "requiresManualReview", "defaultValue": "false" },
+          { "id": "out-fraud", "name": "Flag For Fraud", "field": "flagForFraud", "defaultValue": "false" },
+          { "id": "out-hold", "name": "Hold Days", "field": "holdDays", "defaultValue": "0" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-RV-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-fraud-high-count",
+            "col-count": "> 10",
+            "col-amount": "",
+            "col-tier": "",
+            "out-allowed": "false",
+            "out-review": "true",
+            "out-fraud": "true",
+            "out-hold": "7",
+            "out-ref": "\"POL-RV-0010\""
+          },
+          {
+            "_id": "rule-fraud-high-amount",
+            "col-count": "",
+            "col-amount": "> 5000",
+            "col-tier": "",
+            "out-allowed": "false",
+            "out-review": "true",
+            "out-fraud": "true",
+            "out-hold": "7",
+            "out-ref": "\"POL-RV-0011\""
+          },
+          {
+            "_id": "rule-po-high-count",
+            "col-count": "> 15",
+            "col-amount": "",
+            "col-tier": "\"Platinum One\"",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "0",
+            "out-ref": "\"POL-RV-0012\""
+          },
+          {
+            "_id": "rule-po-high-amount",
+            "col-count": "",
+            "col-amount": "> 10000",
+            "col-tier": "\"Platinum One\"",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "0",
+            "out-ref": "\"POL-RV-0013\""
+          },
+          {
+            "_id": "rule-platinum-high-count",
+            "col-count": "> 10",
+            "col-amount": "",
+            "col-tier": "\"Platinum\"",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "2",
+            "out-ref": "\"POL-RV-0014\""
+          },
+          {
+            "_id": "rule-platinum-high-amount",
+            "col-count": "",
+            "col-amount": "> 7000",
+            "col-tier": "\"Platinum\"",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "2",
+            "out-ref": "\"POL-RV-0015\""
+          },
+          {
+            "_id": "rule-medium-count-high-amount",
+            "col-count": "> 5",
+            "col-amount": "> 2000",
+            "col-tier": "",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "3",
+            "out-ref": "\"POL-RV-0016\""
+          },
+          {
+            "_id": "rule-medium-count",
+            "col-count": "> 5",
+            "col-amount": "",
+            "col-tier": "",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "1",
+            "out-ref": "\"POL-RV-0017\""
+          },
+          {
+            "_id": "rule-high-amount",
+            "col-count": "",
+            "col-amount": "> 2000",
+            "col-tier": "",
+            "out-allowed": "true",
+            "out-review": "true",
+            "out-fraud": "false",
+            "out-hold": "3",
+            "out-ref": "\"POL-RV-0018\""
+          },
+          {
+            "_id": "rule-default",
+            "col-count": "",
+            "col-amount": "",
+            "col-tier": "",
+            "out-allowed": "true",
+            "out-review": "false",
+            "out-fraud": "false",
+            "out-hold": "0",
+            "out-ref": "\"POL-RV-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

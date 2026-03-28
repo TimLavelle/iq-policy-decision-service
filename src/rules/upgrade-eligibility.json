@@ -1,0 +1,165 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Upgrade Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-route", "name": "Route Type", "field": "routeType", "defaultValue": null },
+          { "id": "col-days", "name": "Days Before Departure", "field": "daysBeforeDeparture", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-eligible", "name": "Upgrade Eligible", "field": "upgradeEligible", "defaultValue": "false" },
+          { "id": "out-type", "name": "Upgrade Type", "field": "upgradeType", "defaultValue": "\"not-eligible\"" },
+          { "id": "out-priority", "name": "Priority Level", "field": "priorityLevel", "defaultValue": "5" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-UG-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-sale-blocked",
+            "col-tier": "",
+            "col-fare": "\"Economy Sale\"",
+            "col-route": "",
+            "col-days": "",
+            "out-eligible": "false",
+            "out-type": "\"not-eligible\"",
+            "out-priority": "5",
+            "out-ref": "\"POL-UG-0002\""
+          },
+          {
+            "_id": "rule-po-intl-checkin",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "col-days": "<= 1",
+            "out-eligible": "true",
+            "out-type": "\"complimentary\"",
+            "out-priority": "1",
+            "out-ref": "\"POL-UG-0010\""
+          },
+          {
+            "_id": "rule-po-domestic-checkin",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "col-days": "<= 1",
+            "out-eligible": "true",
+            "out-type": "\"complimentary\"",
+            "out-priority": "1",
+            "out-ref": "\"POL-UG-0011\""
+          },
+          {
+            "_id": "rule-po-intl-points",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"points-upgrade\"",
+            "out-priority": "1",
+            "out-ref": "\"POL-UG-0012\""
+          },
+          {
+            "_id": "rule-platinum-intl-14d",
+            "col-tier": "\"Platinum\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "col-days": "<= 14",
+            "out-eligible": "true",
+            "out-type": "\"points-upgrade\"",
+            "out-priority": "2",
+            "out-ref": "\"POL-UG-0013\""
+          },
+          {
+            "_id": "rule-platinum-domestic",
+            "col-tier": "\"Platinum\"",
+            "col-fare": "\"Economy Flex\"",
+            "col-route": "\"domestic\"",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"points-upgrade\"",
+            "out-priority": "2",
+            "out-ref": "\"POL-UG-0014\""
+          },
+          {
+            "_id": "rule-gold-intl-paid",
+            "col-tier": "\"Gold\"",
+            "col-fare": "in [\"Economy Flex\", \"Premium Economy Flex\"]",
+            "col-route": "\"international\"",
+            "col-days": "<= 14",
+            "out-eligible": "true",
+            "out-type": "\"paid-upgrade\"",
+            "out-priority": "3",
+            "out-ref": "\"POL-UG-0015\""
+          },
+          {
+            "_id": "rule-gold-tasman-paid",
+            "col-tier": "\"Gold\"",
+            "col-fare": "\"Economy Flex\"",
+            "col-route": "\"trans-tasman\"",
+            "col-days": "<= 7",
+            "out-eligible": "true",
+            "out-type": "\"paid-upgrade\"",
+            "out-priority": "3",
+            "out-ref": "\"POL-UG-0016\""
+          },
+          {
+            "_id": "rule-silver-paid-intl",
+            "col-tier": "\"Silver\"",
+            "col-fare": "\"Economy Flex\"",
+            "col-route": "\"international\"",
+            "col-days": "<= 7",
+            "out-eligible": "true",
+            "out-type": "\"paid-upgrade\"",
+            "out-priority": "4",
+            "out-ref": "\"POL-UG-0017\""
+          },
+          {
+            "_id": "rule-any-biz-to-first",
+            "col-tier": "",
+            "col-fare": "\"Business Flex\"",
+            "col-route": "\"international\"",
+            "col-days": "<= 14",
+            "out-eligible": "true",
+            "out-type": "\"paid-upgrade\"",
+            "out-priority": "5",
+            "out-ref": "\"POL-UG-0018\""
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-fare": "",
+            "col-route": "",
+            "col-days": "",
+            "out-eligible": "false",
+            "out-type": "\"not-eligible\"",
+            "out-priority": "5",
+            "out-ref": "\"POL-UG-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

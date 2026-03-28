@@ -1,0 +1,165 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Weather Waiver Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-waiver", "name": "Waiver Type", "field": "waiverType", "defaultValue": null },
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-approved", "name": "Waiver Approved", "field": "waiverApproved", "defaultValue": "false" },
+          { "id": "out-fee-waived", "name": "Change Fee Waived", "field": "changeFeeWaived", "defaultValue": "false" },
+          { "id": "out-period", "name": "Change Period Days", "field": "changePeriodDays", "defaultValue": "3" },
+          { "id": "out-refund", "name": "Refund Eligible", "field": "refundEligible", "defaultValue": "false" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-WW-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-weather-po",
+            "col-waiver": "\"weather\"",
+            "col-fare": "",
+            "col-tier": "\"Platinum One\"",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "14",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0010\""
+          },
+          {
+            "_id": "rule-weather-platinum",
+            "col-waiver": "\"weather\"",
+            "col-fare": "",
+            "col-tier": "\"Platinum\"",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "10",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0011\""
+          },
+          {
+            "_id": "rule-weather-gold",
+            "col-waiver": "\"weather\"",
+            "col-fare": "",
+            "col-tier": "\"Gold\"",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "7",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0012\""
+          },
+          {
+            "_id": "rule-weather-default",
+            "col-waiver": "\"weather\"",
+            "col-fare": "",
+            "col-tier": "",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "5",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0013\""
+          },
+          {
+            "_id": "rule-operational-po",
+            "col-waiver": "\"operational\"",
+            "col-fare": "",
+            "col-tier": "\"Platinum One\"",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "14",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0014\""
+          },
+          {
+            "_id": "rule-operational-premium",
+            "col-waiver": "\"operational\"",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\", \"First\"]",
+            "col-tier": "",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "10",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0015\""
+          },
+          {
+            "_id": "rule-operational-default",
+            "col-waiver": "\"operational\"",
+            "col-fare": "",
+            "col-tier": "",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "5",
+            "out-refund": "false",
+            "out-ref": "\"POL-WW-0016\""
+          },
+          {
+            "_id": "rule-strike-po",
+            "col-waiver": "\"strike\"",
+            "col-fare": "",
+            "col-tier": "\"Platinum One\"",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "7",
+            "out-refund": "true",
+            "out-ref": "\"POL-WW-0017\""
+          },
+          {
+            "_id": "rule-strike-sale",
+            "col-waiver": "\"strike\"",
+            "col-fare": "\"Economy Sale\"",
+            "col-tier": "",
+            "out-approved": "true",
+            "out-fee-waived": "false",
+            "out-period": "3",
+            "out-refund": "false",
+            "out-ref": "\"POL-WW-0018\""
+          },
+          {
+            "_id": "rule-strike-default",
+            "col-waiver": "\"strike\"",
+            "col-fare": "",
+            "col-tier": "",
+            "out-approved": "true",
+            "out-fee-waived": "true",
+            "out-period": "3",
+            "out-refund": "false",
+            "out-ref": "\"POL-WW-0019\""
+          },
+          {
+            "_id": "rule-default",
+            "col-waiver": "",
+            "col-fare": "",
+            "col-tier": "",
+            "out-approved": "false",
+            "out-fee-waived": "false",
+            "out-period": "0",
+            "out-refund": "false",
+            "out-ref": "\"POL-WW-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

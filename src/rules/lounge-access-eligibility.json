@@ -1,0 +1,165 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Lounge Access Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-route", "name": "Route Type", "field": "routeType", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-access", "name": "Lounge Access", "field": "loungeAccess", "defaultValue": "false" },
+          { "id": "out-guests", "name": "Guest Allowance", "field": "guestAllowance", "defaultValue": "0" },
+          { "id": "out-dayuse", "name": "Day Use Eligible", "field": "dayUseEligible", "defaultValue": "false" },
+          { "id": "out-lounge", "name": "Lounge Type", "field": "loungeType", "defaultValue": "\"Qantas Club\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-LA-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-first-fare",
+            "col-tier": "",
+            "col-fare": "\"First\"",
+            "col-route": "",
+            "out-access": "true",
+            "out-guests": "1",
+            "out-dayuse": "true",
+            "out-lounge": "\"First Lounge\"",
+            "out-ref": "\"POL-LA-0010\""
+          },
+          {
+            "_id": "rule-po-intl",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "out-access": "true",
+            "out-guests": "2",
+            "out-dayuse": "true",
+            "out-lounge": "\"First Lounge\"",
+            "out-ref": "\"POL-LA-0011\""
+          },
+          {
+            "_id": "rule-po-domestic",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "out-access": "true",
+            "out-guests": "2",
+            "out-dayuse": "true",
+            "out-lounge": "\"Business Lounge\"",
+            "out-ref": "\"POL-LA-0012\""
+          },
+          {
+            "_id": "rule-biz-fare-intl",
+            "col-tier": "",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\"]",
+            "col-route": "\"international\"",
+            "out-access": "true",
+            "out-guests": "1",
+            "out-dayuse": "false",
+            "out-lounge": "\"Business Lounge\"",
+            "out-ref": "\"POL-LA-0013\""
+          },
+          {
+            "_id": "rule-biz-fare-domestic",
+            "col-tier": "",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\"]",
+            "col-route": "\"domestic\"",
+            "out-access": "true",
+            "out-guests": "1",
+            "out-dayuse": "false",
+            "out-lounge": "\"Business Lounge\"",
+            "out-ref": "\"POL-LA-0014\""
+          },
+          {
+            "_id": "rule-platinum-any",
+            "col-tier": "\"Platinum\"",
+            "col-fare": "",
+            "col-route": "",
+            "out-access": "true",
+            "out-guests": "1",
+            "out-dayuse": "true",
+            "out-lounge": "\"Business Lounge\"",
+            "out-ref": "\"POL-LA-0015\""
+          },
+          {
+            "_id": "rule-gold-paid",
+            "col-tier": "\"Gold\"",
+            "col-fare": "in [\"Economy Flex\", \"Premium Economy Flex\", \"Premium Economy Sale\"]",
+            "col-route": "",
+            "out-access": "true",
+            "out-guests": "1",
+            "out-dayuse": "false",
+            "out-lounge": "\"Qantas Club\"",
+            "out-ref": "\"POL-LA-0016\""
+          },
+          {
+            "_id": "rule-gold-sale",
+            "col-tier": "\"Gold\"",
+            "col-fare": "\"Economy Sale\"",
+            "col-route": "",
+            "out-access": "false",
+            "out-guests": "0",
+            "out-dayuse": "false",
+            "out-lounge": "\"Qantas Club\"",
+            "out-ref": "\"POL-LA-0003\""
+          },
+          {
+            "_id": "rule-silver-paid",
+            "col-tier": "\"Silver\"",
+            "col-fare": "in [\"Economy Flex\", \"Premium Economy Flex\", \"Business Flex\"]",
+            "col-route": "",
+            "out-access": "true",
+            "out-guests": "0",
+            "out-dayuse": "false",
+            "out-lounge": "\"Qantas Club\"",
+            "out-ref": "\"POL-LA-0017\""
+          },
+          {
+            "_id": "rule-silver-sale",
+            "col-tier": "\"Silver\"",
+            "col-fare": "\"Economy Sale\"",
+            "col-route": "",
+            "out-access": "false",
+            "out-guests": "0",
+            "out-dayuse": "false",
+            "out-lounge": "\"Qantas Club\"",
+            "out-ref": "\"POL-LA-0004\""
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-fare": "",
+            "col-route": "",
+            "out-access": "false",
+            "out-guests": "0",
+            "out-dayuse": "false",
+            "out-lounge": "\"Qantas Club\"",
+            "out-ref": "\"POL-LA-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Flight Cancellation Refund",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-days", "name": "Days Before Departure", "field": "daysBeforeDeparture", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-eligible", "name": "Refund Eligible", "field": "refundEligible", "defaultValue": "false" },
+          { "id": "out-type", "name": "Refund Type", "field": "refundType", "defaultValue": "\"non-refundable\"" },
+          { "id": "out-pct", "name": "Refund Percentage", "field": "refundPercentage", "defaultValue": "0" },
+          { "id": "out-days", "name": "Processing Days", "field": "processingDays", "defaultValue": "10" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-RF-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-po-any",
+            "col-fare": "",
+            "col-tier": "\"Platinum One\"",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "100",
+            "out-days": "3",
+            "out-ref": "\"POL-RF-0010\""
+          },
+          {
+            "_id": "rule-first-flex",
+            "col-fare": "\"First\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "100",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0011\""
+          },
+          {
+            "_id": "rule-biz-flex",
+            "col-fare": "\"Business Flex\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "100",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0012\""
+          },
+          {
+            "_id": "rule-biz-sale-platinum-7d",
+            "col-fare": "\"Business Sale\"",
+            "col-tier": "\"Platinum\"",
+            "col-days": "<= 7",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "80",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0013\""
+          },
+          {
+            "_id": "rule-biz-sale-platinum",
+            "col-fare": "\"Business Sale\"",
+            "col-tier": "\"Platinum\"",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"travel-bank\"",
+            "out-pct": "100",
+            "out-days": "3",
+            "out-ref": "\"POL-RF-0014\""
+          },
+          {
+            "_id": "rule-prem-eco-flex",
+            "col-fare": "\"Premium Economy Flex\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "100",
+            "out-days": "7",
+            "out-ref": "\"POL-RF-0015\""
+          },
+          {
+            "_id": "rule-eco-flex",
+            "col-fare": "\"Economy Flex\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"cash\"",
+            "out-pct": "100",
+            "out-days": "7",
+            "out-ref": "\"POL-RF-0016\""
+          },
+          {
+            "_id": "rule-eco-sale-24h",
+            "col-fare": "\"Economy Sale\"",
+            "col-tier": "",
+            "col-days": "<= 1",
+            "out-eligible": "true",
+            "out-type": "\"travel-bank\"",
+            "out-pct": "100",
+            "out-days": "3",
+            "out-ref": "\"POL-RF-0017\""
+          },
+          {
+            "_id": "rule-prem-eco-sale",
+            "col-fare": "\"Premium Economy Sale\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"travel-bank\"",
+            "out-pct": "80",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0018\""
+          },
+          {
+            "_id": "rule-biz-sale",
+            "col-fare": "\"Business Sale\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "true",
+            "out-type": "\"travel-bank\"",
+            "out-pct": "80",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0019\""
+          },
+          {
+            "_id": "rule-eco-sale-gold-7d",
+            "col-fare": "\"Economy Sale\"",
+            "col-tier": "\"Gold\"",
+            "col-days": "<= 7",
+            "out-eligible": "true",
+            "out-type": "\"travel-bank\"",
+            "out-pct": "50",
+            "out-days": "5",
+            "out-ref": "\"POL-RF-0020\""
+          },
+          {
+            "_id": "rule-eco-sale-default",
+            "col-fare": "\"Economy Sale\"",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "false",
+            "out-type": "\"non-refundable\"",
+            "out-pct": "0",
+            "out-days": "0",
+            "out-ref": "\"POL-RF-0001\""
+          },
+          {
+            "_id": "rule-default",
+            "col-fare": "",
+            "col-tier": "",
+            "col-days": "",
+            "out-eligible": "false",
+            "out-type": "\"non-refundable\"",
+            "out-pct": "0",
+            "out-days": "0",
+            "out-ref": "\"POL-RF-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

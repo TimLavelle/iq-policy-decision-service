@@ -1,0 +1,163 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Same Day Standby Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-route", "name": "Route Type", "field": "routeType", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-eligible", "name": "Eligible", "field": "eligible", "defaultValue": "false" },
+          { "id": "out-priority", "name": "Priority", "field": "priority", "defaultValue": "5" },
+          { "id": "out-fee", "name": "Fee AUD", "field": "fee", "defaultValue": "75" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-SDS-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-po-domestic",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "out-eligible": "true",
+            "out-priority": "1",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0010\""
+          },
+          {
+            "_id": "rule-po-international",
+            "col-tier": "\"Platinum One\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "out-eligible": "true",
+            "out-priority": "1",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0010\""
+          },
+          {
+            "_id": "rule-platinum-domestic",
+            "col-tier": "\"Platinum\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "out-eligible": "true",
+            "out-priority": "2",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0011\""
+          },
+          {
+            "_id": "rule-platinum-international",
+            "col-tier": "\"Platinum\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "out-eligible": "true",
+            "out-priority": "2",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0011\""
+          },
+          {
+            "_id": "rule-gold-domestic",
+            "col-tier": "\"Gold\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "out-eligible": "true",
+            "out-priority": "3",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0012\""
+          },
+          {
+            "_id": "rule-gold-international-blocked",
+            "col-tier": "\"Gold\"",
+            "col-fare": "\"Economy Sale\"",
+            "col-route": "\"international\"",
+            "out-eligible": "false",
+            "out-priority": "5",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0002\""
+          },
+          {
+            "_id": "rule-gold-international",
+            "col-tier": "\"Gold\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "out-eligible": "true",
+            "out-priority": "3",
+            "out-fee": "50",
+            "out-ref": "\"POL-SDS-0013\""
+          },
+          {
+            "_id": "rule-silver-domestic",
+            "col-tier": "\"Silver\"",
+            "col-fare": "",
+            "col-route": "\"domestic\"",
+            "out-eligible": "true",
+            "out-priority": "4",
+            "out-fee": "75",
+            "out-ref": "\"POL-SDS-0014\""
+          },
+          {
+            "_id": "rule-silver-international",
+            "col-tier": "\"Silver\"",
+            "col-fare": "",
+            "col-route": "\"international\"",
+            "out-eligible": "false",
+            "out-priority": "5",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0002\""
+          },
+          {
+            "_id": "rule-any-sale-blocked",
+            "col-tier": "",
+            "col-fare": "\"Economy Sale\"",
+            "col-route": "",
+            "out-eligible": "false",
+            "out-priority": "5",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0003\""
+          },
+          {
+            "_id": "rule-any-flex-domestic",
+            "col-tier": "",
+            "col-fare": "in [\"Economy Flex\", \"Premium Economy Flex\", \"Business Flex\"]",
+            "col-route": "\"domestic\"",
+            "out-eligible": "true",
+            "out-priority": "5",
+            "out-fee": "75",
+            "out-ref": "\"POL-SDS-0015\""
+          },
+          {
+            "_id": "rule-default",
+            "col-tier": "",
+            "col-fare": "",
+            "col-route": "",
+            "out-eligible": "false",
+            "out-priority": "5",
+            "out-fee": "0",
+            "out-ref": "\"POL-SDS-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Status Credit Earn",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-fare", "name": "Fare Class", "field": "fareClass", "defaultValue": null },
+          { "id": "col-distance", "name": "Route Distance", "field": "routeDistance", "defaultValue": null },
+          { "id": "col-carrier", "name": "Carrier Code", "field": "carrierCode", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-sc", "name": "Status Credits", "field": "statusCredits", "defaultValue": "0" },
+          { "id": "out-bonus-sc", "name": "Bonus Credits", "field": "bonusCredits", "defaultValue": "0" },
+          { "id": "out-double", "name": "Eligible For Double", "field": "eligibleForDouble", "defaultValue": "false" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-SC-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-first-ultra-qf",
+            "col-fare": "\"First\"",
+            "col-distance": "\"ultra-long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "280",
+            "out-bonus-sc": "40",
+            "out-double": "true",
+            "out-ref": "\"POL-SC-0010\""
+          },
+          {
+            "_id": "rule-first-long-qf",
+            "col-fare": "\"First\"",
+            "col-distance": "\"long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "200",
+            "out-bonus-sc": "25",
+            "out-double": "true",
+            "out-ref": "\"POL-SC-0011\""
+          },
+          {
+            "_id": "rule-biz-flex-ultra-qf",
+            "col-fare": "\"Business Flex\"",
+            "col-distance": "\"ultra-long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "200",
+            "out-bonus-sc": "30",
+            "out-double": "true",
+            "out-ref": "\"POL-SC-0012\""
+          },
+          {
+            "_id": "rule-biz-flex-long-qf",
+            "col-fare": "\"Business Flex\"",
+            "col-distance": "\"long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "140",
+            "out-bonus-sc": "20",
+            "out-double": "true",
+            "out-ref": "\"POL-SC-0013\""
+          },
+          {
+            "_id": "rule-biz-sale-ultra-qf",
+            "col-fare": "\"Business Sale\"",
+            "col-distance": "\"ultra-long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "140",
+            "out-bonus-sc": "10",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0014\""
+          },
+          {
+            "_id": "rule-biz-medium-qf",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\"]",
+            "col-distance": "\"medium\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "80",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0015\""
+          },
+          {
+            "_id": "rule-biz-short-qf",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\"]",
+            "col-distance": "\"short\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "30",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0016\""
+          },
+          {
+            "_id": "rule-eco-flex-ultra-qf",
+            "col-fare": "\"Economy Flex\"",
+            "col-distance": "\"ultra-long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "80",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0017\""
+          },
+          {
+            "_id": "rule-eco-flex-long-qf",
+            "col-fare": "\"Economy Flex\"",
+            "col-distance": "\"long\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "50",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0018\""
+          },
+          {
+            "_id": "rule-eco-flex-short-qf",
+            "col-fare": "\"Economy Flex\"",
+            "col-distance": "\"short\"",
+            "col-carrier": "\"QF\"",
+            "out-sc": "10",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0019\""
+          },
+          {
+            "_id": "rule-eco-sale-jq",
+            "col-fare": "\"Economy Sale\"",
+            "col-distance": "",
+            "col-carrier": "\"JQ\"",
+            "out-sc": "0",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0020\""
+          },
+          {
+            "_id": "rule-biz-oneworld",
+            "col-fare": "in [\"Business Flex\", \"Business Sale\"]",
+            "col-distance": "",
+            "col-carrier": "\"oneworld\"",
+            "out-sc": "60",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0021\""
+          },
+          {
+            "_id": "rule-eco-oneworld",
+            "col-fare": "\"Economy Flex\"",
+            "col-distance": "",
+            "col-carrier": "\"oneworld\"",
+            "out-sc": "20",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0022\""
+          },
+          {
+            "_id": "rule-eco-sale-default",
+            "col-fare": "\"Economy Sale\"",
+            "col-distance": "",
+            "col-carrier": "",
+            "out-sc": "0",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0002\""
+          },
+          {
+            "_id": "rule-default",
+            "col-fare": "",
+            "col-distance": "",
+            "col-carrier": "",
+            "out-sc": "5",
+            "out-bonus-sc": "0",
+            "out-double": "false",
+            "out-ref": "\"POL-SC-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}
