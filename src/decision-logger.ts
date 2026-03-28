@@ -2,7 +2,7 @@
 // Every rule evaluation is logged to Redis LIST "decisions:log" (newest-first).
 // Capped at 500 entries via LTRIM. Reads by the anomaly detector and audit trail.
 
-import { getRedis } from './redis.js'
+import { getRedis } from './redis'
 
 export const DECISIONS_LOG_KEY = 'decisions:log'
 const MAX_LOG_SIZE = 500

@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises'
 import path from 'path'
-import { getRedis } from './redis.js'
+import { getRedis } from './redis'
 
 const RULES_DIR = path.join(process.cwd(), 'src', 'rules')
 

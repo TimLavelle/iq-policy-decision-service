@@ -1,16 +1,16 @@
 import express, { Request, Response } from 'express'
 import { ZenEngine } from '@gorules/zen-engine'
 import { nanoid } from 'nanoid'
-import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base.js'
-import { getRedis } from './redis.js'
+import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base'
+import { getRedis } from './redis'
 import {
   loadRule, saveRule, seedRulesIntoRedis,
   listRules, getRuleMeta,
-} from './rule-store.js'
+} from './rule-store'
 import {
   logDecision, getDecisionLog, detectAnomalies,
   type DecisionLogEntry,
-} from './decision-logger.js'
+} from './decision-logger'
 
 const app = express()
 app.use(express.json())
