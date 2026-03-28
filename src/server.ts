@@ -7,7 +7,7 @@ const nanoid = (size = 10) => randomBytes(size).toString('base64url').slice(0, s
 import { getRedis } from './redis'
 import {
   loadRule, saveRule, seedRulesIntoRedis,
-  listRules, getRuleMeta,
+  listRules, getRuleMeta, getRuleDescription, setRuleDescription,
 } from './rule-store'
 import {
   logDecision, getDecisionLog, detectAnomalies,
@@ -196,6 +196,28 @@ app.post('/v1/rules/:name/simulate', async (req: Request, res: Response) => {
     res.json({ result, durationMs: Date.now() - start })
   } catch (err) {
     res.status(500).json({ error: 'Simulation failed', message: (err as Error).message })
+  }
+})
+
+// GET /v1/rules/:name/description
+app.get('/v1/rules/:name/description', async (req: Request, res: Response) => {
+  const name = req.params['name'] as string
+  if (!listRules().includes(name as never)) { res.status(404).json({ error: 'Rule not found' }); return }
+  const description = await getRuleDescription(name)
+  res.json({ name, description })
+})
+
+// PUT /v1/rules/:name/description
+app.put('/v1/rules/:name/description', async (req: Request, res: Response) => {
+  const name = req.params['name'] as string
+  if (!listRules().includes(name as never)) { res.status(404).json({ error: 'Rule not found' }); return }
+  const { description } = req.body as { description: string }
+  if (typeof description !== 'string') { res.status(400).json({ error: 'description string required' }); return }
+  try {
+    await setRuleDescription(name, description)
+    res.json({ ok: true, name, description })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save description', message: (err as Error).message })
   }
 })
 

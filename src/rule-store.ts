@@ -47,6 +47,10 @@ export function ruleKey(name: string): string {
   return `rules:${name}`
 }
 
+export function descKey(name: string): string {
+  return `rules:${name}:desc`
+}
+
 export function listRules(): typeof KNOWN_RULES[number][] {
   return [...KNOWN_RULES]
 }
@@ -56,6 +60,25 @@ export function getRuleMeta() {
     name,
     ...RULE_META[name],
   }))
+}
+
+/** Read description — Redis first (editable), fallback to hardcoded RULE_META */
+export async function getRuleDescription(name: string): Promise<string> {
+  const redis = getRedis()
+  if (redis) {
+    try {
+      const stored = await redis.get<string>(descKey(name))
+      if (stored) return stored
+    } catch { /* fall through */ }
+  }
+  return RULE_META[name]?.description ?? ''
+}
+
+/** Persist an edited description to Redis */
+export async function setRuleDescription(name: string, description: string): Promise<void> {
+  const redis = getRedis()
+  if (!redis) throw new Error('Redis not configured — cannot persist description')
+  await redis.set(descKey(name), description)
 }
 
 /** Load a rule — Redis first, filesystem fallback */
