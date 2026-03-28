@@ -257,24 +257,14 @@ app.get('/policy/search', async (req: Request, res: Response) => {
 })
 
 // ─── Health ───────────────────────────────────────────────────────────────────
-app.get('/health', async (_req: Request, res: Response) => {
-  const redis = getRedis()
-  let rulesStore: 'redis' | 'filesystem' = 'filesystem'
-  let decisionsLogged = 0
-  if (redis) {
-    try {
-      await redis.ping()
-      rulesStore = 'redis'
-      decisionsLogged = await redis.llen('decisions:log')
-    } catch { /* Redis unreachable */ }
-  }
+// Liveness probe — always responds immediately, no async I/O.
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: SERVICE,
     version: VERSION,
     engine: 'GoRules ZEN Engine',
-    rulesStore,
-    decisionsLogged,
+    rulesStore: getRedis() ? 'redis' : 'filesystem',
     knowledgeBase: process.env.BEDROCK_KB_ID ? 'bedrock-kb' : 'mock',
   })
 })
