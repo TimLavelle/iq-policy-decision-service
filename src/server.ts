@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express'
+import { randomBytes } from 'crypto'
 import { ZenEngine } from '@gorules/zen-engine'
-import { nanoid } from 'nanoid'
 import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-base'
+
+const nanoid = (size = 10) => randomBytes(size).toString('base64url').slice(0, size)
 import { getRedis } from './redis'
 import {
   loadRule, saveRule, seedRulesIntoRedis,
