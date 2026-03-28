@@ -141,7 +141,7 @@ app.get('/v1/rules', (_req: Request, res: Response) => {
 
 // GET /v1/rules/:name — return full JDM JSON
 app.get('/v1/rules/:name', async (req: Request, res: Response) => {
-  const { name } = req.params
+  const name = req.params['name'] as string
   if (!listRules().includes(name as never)) {
     res.status(404).json({ error: 'Rule not found', name })
     return
@@ -157,7 +157,7 @@ app.get('/v1/rules/:name', async (req: Request, res: Response) => {
 
 // PUT /v1/rules/:name — save updated JDM JSON + hot-reload engine
 app.put('/v1/rules/:name', async (req: Request, res: Response) => {
-  const { name } = req.params
+  const name = req.params['name'] as string
   if (!listRules().includes(name as never)) {
     res.status(404).json({ error: 'Rule not found', name })
     return
@@ -178,7 +178,7 @@ app.put('/v1/rules/:name', async (req: Request, res: Response) => {
 
 // POST /v1/rules/:name/simulate — evaluate WITHOUT logging to decision log
 app.post('/v1/rules/:name/simulate', async (req: Request, res: Response) => {
-  const { name } = req.params
+  const name = req.params['name'] as string
   if (!listRules().includes(name as never)) {
     res.status(404).json({ error: 'Rule not found', name })
     return
