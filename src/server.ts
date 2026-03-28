@@ -270,10 +270,9 @@ app.get('/health', (_req: Request, res: Response) => {
 })
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-startup()
-  .then(() => app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN v${VERSION}]`)))
-  .catch(err => {
-    console.error('[startup] failed:', err)
-    // Still start the server — filesystem fallback is functional
-    app.listen(PORT, () => console.log(`${SERVICE} :${PORT} [GoRules DMN — Redis unavailable, filesystem fallback]`))
-  })
+// Listen immediately — same pattern as original, so Railway health check fires
+// as soon as the process is up. Redis seeding runs in the background.
+app.listen(PORT, () => {
+  console.log(`${SERVICE} :${PORT} [GoRules DMN v${VERSION}]`)
+  void startup()
+})
