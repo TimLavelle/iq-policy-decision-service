@@ -1,0 +1,213 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Disruption Compensation",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-type", "name": "Disruption Type", "field": "disruptionType", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-cabin", "name": "Cabin Class", "field": "cabinClass", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-credit", "name": "Travel Bank Credit AUD", "field": "travelBankCreditAud", "defaultValue": "0" },
+          { "id": "out-points", "name": "Points Credit", "field": "pointsCredit", "defaultValue": "0" },
+          { "id": "out-eligible", "name": "Eligible", "field": "eligible", "defaultValue": "false" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-COMP-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-cancel-po",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "\"Platinum One\"",
+            "col-cabin": "",
+            "out-credit": "200",
+            "out-points": "5000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0001\""
+          },
+          {
+            "_id": "rule-cancel-platinum",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "\"Platinum\"",
+            "col-cabin": "",
+            "out-credit": "150",
+            "out-points": "3000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0002\""
+          },
+          {
+            "_id": "rule-cancel-gold",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "\"Gold\"",
+            "col-cabin": "",
+            "out-credit": "100",
+            "out-points": "2000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0003\""
+          },
+          {
+            "_id": "rule-cancel-other",
+            "col-type": "\"CANCELLATION\"",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "75",
+            "out-points": "1000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0004\""
+          },
+          {
+            "_id": "rule-diversion-po",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "\"Platinum One\"",
+            "col-cabin": "",
+            "out-credit": "150",
+            "out-points": "3000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0005\""
+          },
+          {
+            "_id": "rule-diversion-platinum",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "\"Platinum\"",
+            "col-cabin": "",
+            "out-credit": "100",
+            "out-points": "2000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0006\""
+          },
+          {
+            "_id": "rule-diversion-other",
+            "col-type": "\"DIVERSION\"",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "50",
+            "out-points": "1000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0007\""
+          },
+          {
+            "_id": "rule-delay4-po",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "\"Platinum One\"",
+            "col-cabin": "",
+            "out-credit": "100",
+            "out-points": "2000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0008\""
+          },
+          {
+            "_id": "rule-delay4-platinum",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "\"Platinum\"",
+            "col-cabin": "",
+            "out-credit": "75",
+            "out-points": "1500",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0009\""
+          },
+          {
+            "_id": "rule-delay4-gold",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "\"Gold\"",
+            "col-cabin": "",
+            "out-credit": "50",
+            "out-points": "1000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0010\""
+          },
+          {
+            "_id": "rule-delay4-other-premium-cabin",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "",
+            "col-cabin": "in (\"Business\", \"First\")",
+            "out-credit": "50",
+            "out-points": "500",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0011\""
+          },
+          {
+            "_id": "rule-delay4-other",
+            "col-type": "\"DELAY_4HR\"",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "0",
+            "out-points": "500",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0012\""
+          },
+          {
+            "_id": "rule-delay2-po",
+            "col-type": "\"DELAY_2HR\"",
+            "col-tier": "\"Platinum One\"",
+            "col-cabin": "",
+            "out-credit": "50",
+            "out-points": "1000",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0013\""
+          },
+          {
+            "_id": "rule-delay2-platinum",
+            "col-type": "\"DELAY_2HR\"",
+            "col-tier": "\"Platinum\"",
+            "col-cabin": "",
+            "out-credit": "25",
+            "out-points": "500",
+            "out-eligible": "true",
+            "out-ref": "\"POL-COMP-0014\""
+          },
+          {
+            "_id": "rule-delay2-other",
+            "col-type": "\"DELAY_2HR\"",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "0",
+            "out-points": "0",
+            "out-eligible": "false",
+            "out-ref": "\"POL-COMP-0099\""
+          },
+          {
+            "_id": "rule-delay1-any",
+            "col-type": "\"DELAY_1HR\"",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "0",
+            "out-points": "0",
+            "out-eligible": "false",
+            "out-ref": "\"POL-COMP-0099\""
+          },
+          {
+            "_id": "rule-default",
+            "col-type": "",
+            "col-tier": "",
+            "col-cabin": "",
+            "out-credit": "0",
+            "out-points": "0",
+            "out-eligible": "false",
+            "out-ref": "\"POL-COMP-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Auto-Rebook Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-award", "name": "Is Award Booking", "field": "isAwardBooking", "defaultValue": null },
+          { "id": "col-segments", "name": "Segment Count", "field": "segmentCount", "defaultValue": null },
+          { "id": "col-journey-increase", "name": "Journey Time Increase Mins", "field": "journeyTimeIncreaseMins", "defaultValue": null },
+          { "id": "col-connection", "name": "Connection At Risk", "field": "connectionAtRisk", "defaultValue": null },
+          { "id": "col-cabin", "name": "Cabin Class", "field": "cabinClass", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-eligible", "name": "Eligible", "field": "eligible", "defaultValue": "false" },
+          { "id": "out-reason", "name": "Reason", "field": "reason", "defaultValue": "\"Not eligible for auto-rebook\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-ARB-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-journey-increase-too-long",
+            "col-tier": "",
+            "col-award": "",
+            "col-segments": "",
+            "col-journey-increase": "> 240",
+            "col-connection": "",
+            "col-cabin": "",
+            "out-eligible": "false",
+            "out-reason": "\"Journey time increase exceeds 4 hours — passenger should choose alternative\"",
+            "out-ref": "\"POL-ARB-0003\""
+          },
+          {
+            "_id": "rule-too-many-segments",
+            "col-tier": "",
+            "col-award": "",
+            "col-segments": ">= 3",
+            "col-journey-increase": "",
+            "col-connection": "",
+            "col-cabin": "",
+            "out-eligible": "false",
+            "out-reason": "\"Itinerary too complex for auto-rebook — 3 or more segments\"",
+            "out-ref": "\"POL-ARB-0004\""
+          },
+          {
+            "_id": "rule-award-booking",
+            "col-tier": "",
+            "col-award": "true",
+            "col-segments": "",
+            "col-journey-increase": "",
+            "col-connection": "",
+            "col-cabin": "",
+            "out-eligible": "false",
+            "out-reason": "\"Award bookings require agent review — points redemption rules apply\"",
+            "out-ref": "\"POL-ARB-0006\""
+          },
+          {
+            "_id": "rule-platinum-one-eligible",
+            "col-tier": "\"Platinum One\"",
+            "col-award": "false",
+            "col-segments": "",
+            "col-journey-increase": "",
+            "col-connection": "",
+            "col-cabin": "",
+            "out-eligible": "true",
+            "out-reason": "\"Platinum One — eligible for AI auto-rebook\"",
+            "out-ref": "\"POL-ARB-0001\""
+          },
+          {
+            "_id": "rule-platinum-connection-at-risk",
+            "col-tier": "\"Platinum\"",
+            "col-award": "false",
+            "col-segments": "",
+            "col-journey-increase": "",
+            "col-connection": "true",
+            "col-cabin": "",
+            "out-eligible": "true",
+            "out-reason": "\"Platinum with connection at risk — eligible for AI auto-rebook\"",
+            "out-ref": "\"POL-ARB-0002\""
+          },
+          {
+            "_id": "rule-default-not-eligible",
+            "col-tier": "",
+            "col-award": "",
+            "col-segments": "",
+            "col-journey-increase": "",
+            "col-connection": "",
+            "col-cabin": "",
+            "out-eligible": "false",
+            "out-reason": "\"Not eligible for auto-rebook — escalate to agent review\"",
+            "out-ref": "\"POL-ARB-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

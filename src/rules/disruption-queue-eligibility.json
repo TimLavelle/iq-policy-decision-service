@@ -1,0 +1,143 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Disruption Queue Eligibility",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null },
+          { "id": "col-cabin", "name": "Cabin Class", "field": "cabinClass", "defaultValue": null },
+          { "id": "col-connection", "name": "Connection At Risk", "field": "connectionAtRisk", "defaultValue": null },
+          { "id": "col-ssr", "name": "SSR Codes", "field": "ssrCodes", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-eligible", "name": "Queue Eligible", "field": "queueEligible", "defaultValue": "false" },
+          { "id": "out-reason", "name": "Reason", "field": "reason", "defaultValue": "\"Self-service eligible — no intervention required\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-QUE-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-platinum-one",
+            "col-tier": "\"Platinum One\"",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Platinum One — priority disruption queue\"",
+            "out-ref": "\"POL-QUE-0001\""
+          },
+          {
+            "_id": "rule-platinum",
+            "col-tier": "\"Platinum\"",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Platinum — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0001\""
+          },
+          {
+            "_id": "rule-gold",
+            "col-tier": "\"Gold\"",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Gold — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0002\""
+          },
+          {
+            "_id": "rule-silver",
+            "col-tier": "\"Silver\"",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Silver — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0002\""
+          },
+          {
+            "_id": "rule-first-class",
+            "col-tier": "",
+            "col-cabin": "\"First\"",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"First class cabin — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0003\""
+          },
+          {
+            "_id": "rule-business-class",
+            "col-tier": "",
+            "col-cabin": "\"Business\"",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Business class cabin — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0003\""
+          },
+          {
+            "_id": "rule-premium-economy",
+            "col-tier": "",
+            "col-cabin": "\"Premium Economy\"",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Premium Economy cabin — disruption management queue\"",
+            "out-ref": "\"POL-QUE-0003\""
+          },
+          {
+            "_id": "rule-connection-at-risk",
+            "col-tier": "",
+            "col-cabin": "",
+            "col-connection": "true",
+            "col-ssr": "",
+            "out-eligible": "true",
+            "out-reason": "\"Connection at risk — requires intervention\"",
+            "out-ref": "\"POL-QUE-0004\""
+          },
+          {
+            "_id": "rule-has-ssr",
+            "col-tier": "",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "$ != \"\"",
+            "out-eligible": "true",
+            "out-reason": "\"Special service requirement — requires coordination\"",
+            "out-ref": "\"POL-QUE-0005\""
+          },
+          {
+            "_id": "rule-default-self-service",
+            "col-tier": "",
+            "col-cabin": "",
+            "col-connection": "",
+            "col-ssr": "",
+            "out-eligible": "false",
+            "out-reason": "\"Self-service eligible — no intervention required\"",
+            "out-ref": "\"POL-QUE-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

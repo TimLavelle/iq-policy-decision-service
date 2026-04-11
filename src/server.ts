@@ -102,6 +102,97 @@ app.post('/v1/decisions/disruption', async (req: Request, res: Response) => {
   }
 })
 
+// ─── POST /v1/decisions/autorebook-eligibility ───────────────────────────────
+app.post('/v1/decisions/autorebook-eligibility', async (req: Request, res: Response) => {
+  const { customerTier, connectionAtRisk, cabinClass, isAwardBooking, segmentCount, journeyTimeIncreaseMins } = req.body
+  try {
+    const result = await evaluate('disruption-autorebook-eligibility.json', {
+      customerTier,
+      connectionAtRisk: Boolean(connectionAtRisk),
+      cabinClass,
+      isAwardBooking: Boolean(isAwardBooking),
+      segmentCount: Number(segmentCount),
+      journeyTimeIncreaseMins: Number(journeyTimeIncreaseMins),
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-autorebook-eligibility.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/escalation-check ─────────────────────────────────────
+app.post('/v1/decisions/escalation-check', async (req: Request, res: Response) => {
+  const { ssrCodes, operatingCarrier } = req.body
+  try {
+    const result = await evaluate('disruption-ssr-escalation.json', {
+      ssrCodes: ssrCodes ?? '',
+      operatingCarrier: operatingCarrier ?? '',
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-ssr-escalation.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/connection-mctime ────────────────────────────────────
+app.post('/v1/decisions/connection-mctime', async (req: Request, res: Response) => {
+  const { routeType, connectionAirport } = req.body
+  try {
+    const result = await evaluate('disruption-connection-thresholds.json', {
+      routeType,
+      connectionAirport: connectionAirport ?? '',
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-connection-thresholds.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/queue-eligibility ────────────────────────────────────
+app.post('/v1/decisions/queue-eligibility', async (req: Request, res: Response) => {
+  const { customerTier, cabinClass, connectionAtRisk, ssrCodes } = req.body
+  try {
+    const result = await evaluate('disruption-queue-eligibility.json', {
+      customerTier,
+      cabinClass,
+      connectionAtRisk: Boolean(connectionAtRisk),
+      ssrCodes: ssrCodes ?? '',
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-queue-eligibility.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/compensation-amount ──────────────────────────────────
+app.post('/v1/decisions/compensation-amount', async (req: Request, res: Response) => {
+  const { disruptionType, customerTier, cabinClass } = req.body
+  try {
+    const result = await evaluate('disruption-compensation.json', {
+      disruptionType,
+      customerTier,
+      cabinClass: cabinClass ?? '',
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-compensation.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
+// ─── POST /v1/decisions/classify-disruption ──────────────────────────────────
+app.post('/v1/decisions/classify-disruption', async (req: Request, res: Response) => {
+  const { delayMinutes, cancelled } = req.body
+  try {
+    const result = await evaluate('disruption-type-classification.json', {
+      delayMinutes: Number(delayMinutes ?? 0),
+      cancelled: Boolean(cancelled),
+    })
+    res.json({ ...result, source: `${SERVICE} · GoRules DMN`, ruleFile: 'disruption-type-classification.json', aiConfidence: 0.99 })
+  } catch (err) {
+    res.status(500).json({ error: 'Rule evaluation failed', message: (err as Error).message })
+  }
+})
+
 // ─── POST /v1/decisions/policy (backward compat) ─────────────────────────────
 app.post('/v1/decisions/policy', async (req: Request, res: Response) => {
   const { tier, scenarioType } = req.body

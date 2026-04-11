@@ -1,0 +1,185 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "SSR Escalation Check",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-ssr", "name": "SSR Codes", "field": "ssrCodes", "defaultValue": null },
+          { "id": "col-carrier", "name": "Operating Carrier", "field": "operatingCarrier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-escalate", "name": "Requires CC Escalation", "field": "requiresCcEscalation", "defaultValue": "false" },
+          { "id": "out-reason", "name": "Escalation Reason", "field": "escalationReason", "defaultValue": "\"No escalation required\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-ESC-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-ssr-wchr",
+            "col-ssr": "contains($, \"WCHR\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Wheelchair assistance requires ground coordination at rebooking airports\"",
+            "out-ref": "\"POL-ESC-0001\""
+          },
+          {
+            "_id": "rule-ssr-wchs",
+            "col-ssr": "contains($, \"WCHS\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Wheelchair assistance requires ground coordination at rebooking airports\"",
+            "out-ref": "\"POL-ESC-0001\""
+          },
+          {
+            "_id": "rule-ssr-wchc",
+            "col-ssr": "contains($, \"WCHC\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Wheelchair assistance requires ground coordination at rebooking airports\"",
+            "out-ref": "\"POL-ESC-0001\""
+          },
+          {
+            "_id": "rule-ssr-umnr",
+            "col-ssr": "contains($, \"UMNR\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Unaccompanied minor — guardian consent required\"",
+            "out-ref": "\"POL-ESC-0002\""
+          },
+          {
+            "_id": "rule-ssr-deaf",
+            "col-ssr": "contains($, \"DEAF\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Deaf passenger — visual notification required at every touchpoint\"",
+            "out-ref": "\"POL-ESC-0003\""
+          },
+          {
+            "_id": "rule-ssr-blnd",
+            "col-ssr": "contains($, \"BLND\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Blind passenger — escort must be pre-arranged at every touchpoint\"",
+            "out-ref": "\"POL-ESC-0003\""
+          },
+          {
+            "_id": "rule-ssr-dpna",
+            "col-ssr": "contains($, \"DPNA\")",
+            "col-carrier": "",
+            "out-escalate": "true",
+            "out-reason": "\"Disabled passenger — case-by-case operational assessment required\"",
+            "out-ref": "\"POL-ESC-0004\""
+          },
+          {
+            "_id": "rule-interline-ek",
+            "col-ssr": "",
+            "col-carrier": "\"EK\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-aa",
+            "col-ssr": "",
+            "col-carrier": "\"AA\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-ba",
+            "col-ssr": "",
+            "col-carrier": "\"BA\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-cx",
+            "col-ssr": "",
+            "col-carrier": "\"CX\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-jl",
+            "col-ssr": "",
+            "col-carrier": "\"JL\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-mh",
+            "col-ssr": "",
+            "col-carrier": "\"MH\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-sq",
+            "col-ssr": "",
+            "col-carrier": "\"SQ\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-nz",
+            "col-ssr": "",
+            "col-carrier": "\"NZ\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-qr",
+            "col-ssr": "",
+            "col-carrier": "\"QR\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-interline-et",
+            "col-ssr": "",
+            "col-carrier": "\"ET\"",
+            "out-escalate": "true",
+            "out-reason": "\"Interline booking — partner airline coordination required\"",
+            "out-ref": "\"POL-ESC-0010\""
+          },
+          {
+            "_id": "rule-default-no-escalation",
+            "col-ssr": "",
+            "col-carrier": "",
+            "out-escalate": "false",
+            "out-reason": "\"No escalation required\"",
+            "out-ref": "\"POL-ESC-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

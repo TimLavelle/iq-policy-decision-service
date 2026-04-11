@@ -1,0 +1,105 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Connection Minimum Time",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-route-type", "name": "Route Type", "field": "routeType", "defaultValue": null },
+          { "id": "col-airport", "name": "Connection Airport", "field": "connectionAirport", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-min", "name": "Minimum Connection Minutes", "field": "minimumConnectionMinutes", "defaultValue": "60" },
+          { "id": "out-rec", "name": "Recommended Connection Minutes", "field": "recommendedConnectionMinutes", "defaultValue": "90" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-MCT-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-dom-dom",
+            "col-route-type": "\"domestic-domestic\"",
+            "col-airport": "",
+            "out-min": "30",
+            "out-rec": "45",
+            "out-ref": "\"POL-MCT-0001\""
+          },
+          {
+            "_id": "rule-dom-intl",
+            "col-route-type": "\"domestic-international\"",
+            "col-airport": "",
+            "out-min": "60",
+            "out-rec": "90",
+            "out-ref": "\"POL-MCT-0002\""
+          },
+          {
+            "_id": "rule-intl-dom",
+            "col-route-type": "\"international-domestic\"",
+            "col-airport": "",
+            "out-min": "60",
+            "out-rec": "90",
+            "out-ref": "\"POL-MCT-0002\""
+          },
+          {
+            "_id": "rule-intl-intl-syd",
+            "col-route-type": "\"international-international\"",
+            "col-airport": "\"SYD\"",
+            "out-min": "90",
+            "out-rec": "120",
+            "out-ref": "\"POL-MCT-0003\""
+          },
+          {
+            "_id": "rule-intl-intl-mel",
+            "col-route-type": "\"international-international\"",
+            "col-airport": "\"MEL\"",
+            "out-min": "90",
+            "out-rec": "120",
+            "out-ref": "\"POL-MCT-0003\""
+          },
+          {
+            "_id": "rule-intl-intl-bne",
+            "col-route-type": "\"international-international\"",
+            "col-airport": "\"BNE\"",
+            "out-min": "90",
+            "out-rec": "120",
+            "out-ref": "\"POL-MCT-0003\""
+          },
+          {
+            "_id": "rule-intl-intl-default",
+            "col-route-type": "\"international-international\"",
+            "col-airport": "",
+            "out-min": "75",
+            "out-rec": "105",
+            "out-ref": "\"POL-MCT-0003\""
+          },
+          {
+            "_id": "rule-default",
+            "col-route-type": "",
+            "col-airport": "",
+            "out-min": "60",
+            "out-rec": "90",
+            "out-ref": "\"POL-MCT-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Award Booking Disruption Handling",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-award", "name": "Is Award Booking", "field": "isAwardBooking", "defaultValue": null },
+          { "id": "col-inventory", "name": "Has Award Inventory On Alternative", "field": "hasAwardInventoryOnAlternative", "defaultValue": null },
+          { "id": "col-tier", "name": "Customer Tier", "field": "customerTier", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-action", "name": "Action", "field": "action", "defaultValue": "\"agent_review_required\"" },
+          { "id": "out-restore", "name": "Restore Points", "field": "restorePoints", "defaultValue": "false" },
+          { "id": "out-reason", "name": "Reason", "field": "reason", "defaultValue": "\"Award booking — agent review required\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-AWD-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-not-award",
+            "col-award": "false",
+            "col-inventory": "",
+            "col-tier": "",
+            "out-action": "\"standard_rebook\"",
+            "out-restore": "false",
+            "out-reason": "\"Not an award booking\"",
+            "out-ref": "\"POL-AWD-0099\""
+          },
+          {
+            "_id": "rule-award-inventory-po",
+            "col-award": "true",
+            "col-inventory": "true",
+            "col-tier": "\"Platinum One\"",
+            "out-action": "\"auto_rebook_award\"",
+            "out-restore": "false",
+            "out-reason": "\"Award inventory available — auto-rebook proceeds\"",
+            "out-ref": "\"POL-AWD-0001\""
+          },
+          {
+            "_id": "rule-award-inventory-other",
+            "col-award": "true",
+            "col-inventory": "true",
+            "col-tier": "",
+            "out-action": "\"agent_review_required\"",
+            "out-restore": "false",
+            "out-reason": "\"Award booking with inventory — agent confirmation required\"",
+            "out-ref": "\"POL-AWD-0002\""
+          },
+          {
+            "_id": "rule-award-no-inventory",
+            "col-award": "true",
+            "col-inventory": "false",
+            "col-tier": "",
+            "out-action": "\"agent_review_required\"",
+            "out-restore": "true",
+            "out-reason": "\"No award inventory on alternative — points must be restored manually\"",
+            "out-ref": "\"POL-AWD-0003\""
+          },
+          {
+            "_id": "rule-default",
+            "col-award": "",
+            "col-inventory": "",
+            "col-tier": "",
+            "out-action": "\"agent_review_required\"",
+            "out-restore": "true",
+            "out-reason": "\"Award booking — agent review required\"",
+            "out-ref": "\"POL-AWD-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}

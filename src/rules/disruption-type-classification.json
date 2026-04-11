@@ -1,0 +1,81 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Disruption Type Classification",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-cancelled", "name": "Cancelled", "field": "cancelled", "defaultValue": null },
+          { "id": "col-delay", "name": "Delay Minutes", "field": "delayMinutes", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-type", "name": "Disruption Type", "field": "disruptionType", "defaultValue": "\"MINOR_DELAY\"" },
+          { "id": "out-severity", "name": "Severity", "field": "severity", "defaultValue": "\"low\"" },
+          { "id": "out-ref", "name": "Policy Ref", "field": "policyRef", "defaultValue": "\"POL-DTC-0099\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-cancellation",
+            "col-cancelled": "true",
+            "col-delay": "",
+            "out-type": "\"CANCELLATION\"",
+            "out-severity": "\"critical\"",
+            "out-ref": "\"POL-DTC-0001\""
+          },
+          {
+            "_id": "rule-delay-4hr",
+            "col-cancelled": "",
+            "col-delay": ">= 240",
+            "out-type": "\"DELAY_4HR\"",
+            "out-severity": "\"high\"",
+            "out-ref": "\"POL-DTC-0002\""
+          },
+          {
+            "_id": "rule-delay-2hr",
+            "col-cancelled": "",
+            "col-delay": ">= 120",
+            "out-type": "\"DELAY_2HR\"",
+            "out-severity": "\"medium\"",
+            "out-ref": "\"POL-DTC-0003\""
+          },
+          {
+            "_id": "rule-delay-1hr",
+            "col-cancelled": "",
+            "col-delay": ">= 60",
+            "out-type": "\"DELAY_1HR\"",
+            "out-severity": "\"low\"",
+            "out-ref": "\"POL-DTC-0004\""
+          },
+          {
+            "_id": "rule-default-minor-delay",
+            "col-cancelled": "",
+            "col-delay": "",
+            "out-type": "\"MINOR_DELAY\"",
+            "out-severity": "\"low\"",
+            "out-ref": "\"POL-DTC-0099\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt", "targetId": "node-output" }
+  ]
+}
