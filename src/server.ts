@@ -6,7 +6,7 @@ import { queryKnowledgeBase, explainPolicy, searchPolicies } from './knowledge-b
 const nanoid = (size = 10) => randomBytes(size).toString('base64url').slice(0, size)
 import { getRedis } from './redis'
 import {
-  loadRule, saveRule, seedRulesIntoRedis,
+  loadRule, saveRule, seedRulesIntoRedis, forceSeedRule,
   listRules, getRuleMeta, getRuleDescription, setRuleDescription,
 } from './rule-store'
 import {
@@ -266,6 +266,23 @@ app.put('/v1/rules/:name', async (req: Request, res: Response) => {
     res.json({ ok: true, name })
   } catch (err) {
     res.status(500).json({ error: 'Failed to save rule', message: (err as Error).message })
+  }
+})
+
+// POST /v1/rules/:name/reseed — force-overwrite Redis with the on-disk rule file.
+// Use when a new rule JSON was deployed but Redis has a stale/empty key.
+app.post('/v1/rules/:name/reseed', async (req: Request, res: Response) => {
+  const name = req.params['name'] as string
+  if (!listRules().includes(name as never)) {
+    res.status(404).json({ error: 'Rule not found', name })
+    return
+  }
+  try {
+    await forceSeedRule(name)
+    refreshEngine()
+    res.json({ ok: true, name, message: 'Rule reseeded from disk into Redis' })
+  } catch (err) {
+    res.status(500).json({ error: 'Reseed failed', message: (err as Error).message })
   }
 })
 

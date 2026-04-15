@@ -324,6 +324,16 @@ export async function saveRule(name: string, content: string): Promise<void> {
   fs.writeFile(path.join(RULES_DIR, name), content, 'utf-8').catch(() => {})
 }
 
+/** Force-seed a single rule from disk to Redis, overwriting whatever is there.
+ *  Used when a new rule file is deployed but Redis already has a stale/empty key. */
+export async function forceSeedRule(name: string): Promise<void> {
+  const redis = getRedis()
+  if (!redis) throw new Error('Redis not configured')
+  const content = await fs.readFile(path.join(RULES_DIR, name), 'utf-8')
+  await redis.set(ruleKey(name), content)
+  console.log(`[rule-store] force-seeded ${name} into Redis`)
+}
+
 /** On startup: seed Redis with filesystem rules for any key not yet present */
 export async function seedRulesIntoRedis(): Promise<void> {
   const redis = getRedis()
