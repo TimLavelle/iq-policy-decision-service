@@ -329,6 +329,35 @@ app.get('/v1/decisions/anomalies', async (req: Request, res: Response) => {
   res.json({ anomalies, analysedCount })
 })
 
+// ─── Points redemption rates — convenience endpoint ───────────────────────────
+// Returns the full rate table for all cabin × programme combinations so callers
+// can derive points from price without calling /simulate per-fare.
+// Formula: points = Math.round(price * 100 / centsPerPoint)
+
+const CABINS = ['Economy', 'Premium Economy', 'Business', 'First'] as const
+const PROGRAMMES = ['Classic Plus', 'Classic Rewards'] as const
+
+app.get('/v1/policy/points-redemption-rates', async (_req: Request, res: Response) => {
+  try {
+    const rates: Record<string, Record<string, { centsPerPoint: number; programmeLabel: string; policyRef: string }>> = {}
+    for (const cabin of CABINS) {
+      rates[cabin] = {}
+      for (const programme of PROGRAMMES) {
+        const { result } = await engine.evaluate('points-redemption-rate', { cabin, programme })
+        const r = result as { centsPerPoint?: number; programmeLabel?: string; policyRef?: string }
+        rates[cabin]![programme] = {
+          centsPerPoint: r.centsPerPoint ?? 1,
+          programmeLabel: r.programmeLabel ?? programme,
+          policyRef: r.policyRef ?? 'POL-PR-0001',
+        }
+      }
+    }
+    res.json({ rates, source: 'SVoP · GoRules DMN · points-redemption-rate' })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to evaluate points-redemption-rate rule', message: (err as Error).message })
+  }
+})
+
 // ─── Policy KB endpoints ──────────────────────────────────────────────────────
 
 app.post('/policy/query', async (req: Request, res: Response) => {

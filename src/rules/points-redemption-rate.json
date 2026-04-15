@@ -1,0 +1,105 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "node-input",
+      "name": "Request",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 200 }
+    },
+    {
+      "id": "node-dt",
+      "name": "Points Redemption Rate",
+      "type": "decisionTableNode",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "col-cabin",     "name": "Cabin",     "field": "cabin",     "defaultValue": null },
+          { "id": "col-programme", "name": "Programme", "field": "programme", "defaultValue": null }
+        ],
+        "outputs": [
+          { "id": "out-cpp",   "name": "Cents Per Point",  "field": "centsPerPoint",  "defaultValue": "1" },
+          { "id": "out-label", "name": "Programme Label",  "field": "programmeLabel", "defaultValue": "\"Classic Plus\"" },
+          { "id": "out-ref",   "name": "Policy Ref",       "field": "policyRef",      "defaultValue": "\"POL-PR-0001\"" }
+        ],
+        "rules": [
+          {
+            "_id": "rule-first-classic",
+            "col-cabin": "\"First\"",
+            "col-programme": "\"Classic Rewards\"",
+            "out-cpp": "6.5",
+            "out-label": "\"Classic Rewards\"",
+            "out-ref": "\"POL-PR-0006\""
+          },
+          {
+            "_id": "rule-first-plus",
+            "col-cabin": "\"First\"",
+            "col-programme": "",
+            "out-cpp": "1.25",
+            "out-label": "\"Classic Plus\"",
+            "out-ref": "\"POL-PR-0002\""
+          },
+          {
+            "_id": "rule-biz-classic",
+            "col-cabin": "\"Business\"",
+            "col-programme": "\"Classic Rewards\"",
+            "out-cpp": "4.5",
+            "out-label": "\"Classic Rewards\"",
+            "out-ref": "\"POL-PR-0005\""
+          },
+          {
+            "_id": "rule-biz-plus",
+            "col-cabin": "\"Business\"",
+            "col-programme": "",
+            "out-cpp": "1.25",
+            "out-label": "\"Classic Plus\"",
+            "out-ref": "\"POL-PR-0002\""
+          },
+          {
+            "_id": "rule-prem-eco-classic",
+            "col-cabin": "\"Premium Economy\"",
+            "col-programme": "\"Classic Rewards\"",
+            "out-cpp": "2.5",
+            "out-label": "\"Classic Rewards\"",
+            "out-ref": "\"POL-PR-0004\""
+          },
+          {
+            "_id": "rule-prem-eco-plus",
+            "col-cabin": "\"Premium Economy\"",
+            "col-programme": "",
+            "out-cpp": "1.25",
+            "out-label": "\"Classic Plus\"",
+            "out-ref": "\"POL-PR-0002\""
+          },
+          {
+            "_id": "rule-eco-classic",
+            "col-cabin": "\"Economy\"",
+            "col-programme": "\"Classic Rewards\"",
+            "out-cpp": "2",
+            "out-label": "\"Classic Rewards\"",
+            "out-ref": "\"POL-PR-0003\""
+          },
+          {
+            "_id": "rule-eco-plus",
+            "col-cabin": "",
+            "col-programme": "",
+            "out-cpp": "1",
+            "out-label": "\"Classic Plus\"",
+            "out-ref": "\"POL-PR-0001\""
+          }
+        ]
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "node-output",
+      "name": "Response",
+      "type": "outputNode",
+      "position": { "x": 600, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "edge-1", "sourceId": "node-input", "targetId": "node-dt" },
+    { "id": "edge-2", "sourceId": "node-dt",    "targetId": "node-output" }
+  ]
+}
