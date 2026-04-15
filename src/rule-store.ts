@@ -35,6 +35,7 @@ const KNOWN_RULES = [
   'special-item-fee.json',
   // Loyalty
   'points-earn-rate.json',
+  'points-redemption-rate.json',
   'status-credit-earn.json',
   'upgrade-eligibility.json',
   'lounge-access-eligibility.json',
@@ -195,6 +196,14 @@ const RULE_META: Record<string, { displayName: string; description: string; inpu
     decisionEndpoint: '/v1/decisions/special-item',
   },
   // ── Loyalty ───────────────────────────────────────────────────────────────
+  'points-redemption-rate.json': {
+    group: 'Loyalty',
+    displayName: 'Points Redemption Rate',
+    description: 'Determines the cents-per-point value for redeeming Qantas Points on flights by cabin class and programme (Classic Plus or Classic Rewards). Used to derive points cost from cash price: points = price × 100 ÷ centsPerPoint.',
+    inputs: ['cabin', 'programme'],
+    outputs: ['centsPerPoint', 'programmeLabel', 'policyRef'],
+    decisionEndpoint: '/v1/decisions/points-redemption-rate',
+  },
   'points-earn-rate.json': {
     group: 'Loyalty',
     displayName: 'Points Earn Rate',
